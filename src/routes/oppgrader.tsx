@@ -14,7 +14,7 @@ export const Route = createFileRoute("/oppgrader")({
 
 function Oppgrader() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-6 px-5 py-10 sm:py-16">
+    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-5 py-10 sm:py-16">
       <header className="flex flex-col items-center text-center">
         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
           <ChefHat className="h-7 w-7" />

@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { InstallPrompt } from "@/components/InstallPrompt";
 import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -149,7 +148,7 @@ function Index() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-8 px-5 py-10 sm:py-16">
+    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-8 px-5 py-10 sm:py-16">
       <header className="flex flex-col items-center text-center">
         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
           <ChefHat className="h-7 w-7" />
@@ -268,7 +267,6 @@ function Index() {
         </>
       )}
 
-      <InstallPrompt />
     </main>
   );
 }
