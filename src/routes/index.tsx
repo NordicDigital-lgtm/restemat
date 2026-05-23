@@ -71,7 +71,16 @@ function Index() {
         </div>
       )}
 
-      {mutation.data && <RecipeCard recipe={mutation.data} />}
+      {mutation.data && (
+        <>
+          {mutation.data.lowIngredientNote && (
+            <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
+              {mutation.data.lowIngredientNote}
+            </div>
+          )}
+          <RecipeCard recipe={mutation.data} />
+        </>
+      )}
     </main>
   );
 }
