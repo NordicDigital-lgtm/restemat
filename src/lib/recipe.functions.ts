@@ -186,6 +186,8 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
       steps?: unknown;
       unused_ingredients?: unknown;
       unused_reason?: unknown;
+      unsafe_ingredients?: unknown;
+      unsafe_reason?: unknown;
       filtered_out?: unknown;
       low_ingredient_note?: unknown;
       error?: string;
@@ -200,6 +202,7 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
     }
 
     const unusedIngredients = toStringArray(parsed.unused_ingredients);
+    const unsafeIngredients = toStringArray(parsed.unsafe_ingredients);
 
     return {
       name: cleanString(parsed.title) || "Middagsforslag",
@@ -211,6 +214,8 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
       lowIngredientNote: cleanString(parsed.low_ingredient_note) || null,
       unusedIngredients,
       unusedReason: unusedIngredients.length > 0 ? cleanString(parsed.unused_reason) || null : null,
+      unsafeIngredients,
+      unsafeReason: unsafeIngredients.length > 0 ? cleanString(parsed.unsafe_reason) || null : null,
       filteredOut: toStringArray(parsed.filtered_out),
     };
   });
