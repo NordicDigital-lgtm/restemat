@@ -20,6 +20,7 @@ export type RecipeResult = {
   steps: string[];
   lowIngredientNote: string | null;
   unusedIngredients: string[];
+  unusedReason: string | null;
   filteredOut: string[];
 };
 
