@@ -42,6 +42,7 @@ function writeUsage(count: number) {
 
 function isDevMode(): boolean {
   if (typeof window === "undefined") return false;
+  if (window.sessionStorage.getItem("testPaywall") === "true") return false;
   return window.localStorage.getItem("devMode") === "true";
 }
 
@@ -49,22 +50,27 @@ function Index() {
   const [ingredients, setIngredients] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState("");
   const [usage, setUsage] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [isDev, setIsDev] = useState(false);
   const findRecipeFn = useServerFn(findRecipe);
-
-  const isDev = isDevMode();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem("devMode", "true");
+    if (!window.localStorage.getItem("devMode")) {
+      window.localStorage.setItem("devMode", "true");
+    }
     if (window.location.search.includes("reset=true")) {
       window.localStorage.removeItem(STORAGE_KEY);
       window.location.replace(window.location.pathname);
+      return;
     }
+    setIsDev(isDevMode());
+    setUsage(readUsage());
+    setMounted(true);
   }, []);
 
   useEffect(() => {
-    setUsage(readUsage());
-    if (isDev) return;
+    if (!mounted || isDev) return;
     const now = new Date();
     const midnight = new Date(now);
     midnight.setHours(24, 0, 0, 0);
@@ -73,7 +79,15 @@ function Index() {
       setUsage(0);
     }, midnight.getTime() - now.getTime());
     return () => clearTimeout(t);
-  }, []);
+  }, [mounted, isDev]);
+
+  const enableTestPaywall = () => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem("testPaywall", "true");
+    window.localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
+  };
+
 
   const limitReached = !isDev && usage >= DAILY_LIMIT;
 
