@@ -116,10 +116,10 @@ function Index() {
           className="min-h-32 resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
           disabled={mutation.isPending}
         />
-        <Button
+      <Button
           type="submit"
           size="lg"
-          disabled={mutation.isPending || !ingredients.trim()}
+          disabled={mutation.isPending || !ingredients.trim() || limitReached}
           className="h-12 rounded-xl text-base font-semibold"
         >
           {mutation.isPending ? (
@@ -133,7 +133,21 @@ function Index() {
         </Button>
       </form>
 
+      {limitReached && (
+        <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm text-foreground">
+          Du har brukt dagens 3 gratis søk 🍽️ Vil du ha ubegrenset tilgang?{" "}
+          <Link to="/oppgrader" className="font-semibold text-primary underline underline-offset-2">
+            Få full tilgang
+          </Link>
+        </div>
+      )}
+
+      <p className="text-center text-xs text-muted-foreground">
+        {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
+      </p>
+
       {mutation.isError && (
+
         <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
           {mutation.error.message || "Noe gikk galt. Prøv igjen."}
         </div>
