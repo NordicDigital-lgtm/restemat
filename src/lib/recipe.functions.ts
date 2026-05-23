@@ -188,7 +188,7 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
                   },
                   carb_suggestion: {
                     type: "string",
-                    description: "Kort forslag til karbohydrat uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Kokt ris eller ovnsbakte poteter'. ALLTID foreslå når oppskriften mangler karbohydrat — inkludert curry og gryterett der ris/naan er naturlig. Til egg: foreslå ALLTID stekte eller ovnsbakte poteter, ALDRI kokte.",
+                    description: "Kort forslag til karbohydrat uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Kokt ris eller ovnsbakte poteter'. ALLTID foreslå når oppskriften mangler karbohydrat — inkludert curry og gryterett der ris/naan er naturlig.",
                   },
                   sauce_suggestion: {
                     type: "string",
