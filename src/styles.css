@@ -151,5 +151,19 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    background-image: radial-gradient(
+        circle at 15% 0%,
+        oklch(0.92 0.07 65 / 0.5),
+        transparent 50%
+      ),
+      radial-gradient(circle at 95% 100%, oklch(0.9 0.08 40 / 0.4), transparent 55%);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 }
+
