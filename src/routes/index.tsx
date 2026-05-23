@@ -141,7 +141,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
           </section>
         )}
 
-        {recipe.unusedIngredients.length > 0 && (
+        {(recipe.unusedIngredients.length > 0 || recipe.unsafeIngredients.length > 0) && (
           <section>
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               <Archive className="h-4 w-4" />
@@ -150,7 +150,15 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
             <ul className="flex flex-wrap gap-2">
               {recipe.unusedIngredients.map((item) => (
                 <li
-                  key={item}
+                  key={`u-${item}`}
+                  className="rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground"
+                >
+                  {item}
+                </li>
+              ))}
+              {recipe.unsafeIngredients.map((item) => (
+                <li
+                  key={`s-${item}`}
                   className="rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground"
                 >
                   {item}
@@ -160,6 +168,11 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
             {recipe.unusedReason && (
               <p className="mt-3 text-sm italic text-muted-foreground">
                 {recipe.unusedReason}
+              </p>
+            )}
+            {recipe.unsafeReason && (
+              <p className="mt-2 text-sm italic text-muted-foreground">
+                Utelatt av sikkerhetsgrunner: {recipe.unsafeReason}
               </p>
             )}
           </section>
