@@ -106,7 +106,7 @@ function Index() {
     return raw
       .split(/[,\n;]+/)
       .map((t) => t.trim())
-      .filter((t) => t.length >= 2 && /^[a-zA-ZæøåÆØÅ0-9\s.\-'/&]+$/.test(t))
+      .filter((t) => t.length >= 3 && /^[a-zA-ZæøåÆØÅ0-9\s.\-'/&]+$/.test(t))
       .join(", ");
   };
 
