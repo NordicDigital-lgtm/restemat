@@ -75,9 +75,7 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 6) MEIERIPRODUKTER SOM MATLAGINGSINGREDIENSER: Når melk, fløte, kremfløte, rømme, crème fraîche, yoghurt, smør, ost eller lignende nøytrale meieriprodukter dukker opp sammen med salte/savory ingredienser, behandle dem som BRUKBARE matlagingsingredienser (sauser, gratenger, supper, stuinger, paier, bakst osv.) — IKKE som drikker som skal parkeres i unused_ingredients. Bare legg meieriprodukter i unused_ingredients hvis de virkelig kolliderer med den valgte retten (f.eks. fløte i en lett asiatisk wok der det ikke hører hjemme).
 
-7) KUN NORSK: Appen aksepterer KUN norske matvarenavn. Hvis brukeren skriver ord på andre språk (engelsk, spansk, fransk, polsk osv.) eller med ikke-latinske tegn (kyrillisk, arabisk, kinesisk, japansk, koreansk osv.), ignorer dem stille. IKKE oversett, IKKE transliterer, IKKE legg dem i filtered_out — bare hopp over dem. Bare elementer som tydelig er norske matvarenavn skal behandles.
-
-8) INGREDIENSNAVN: Skriv ingrediensnavn rent uten parenteser eller hakeparenteser rundt navnet. Ikke pakk navn inn i ( ) eller [ ] noe sted.`,
+7) INGREDIENSNAVN: Skriv ingrediensnavn rent uten parenteser eller hakeparenteser rundt navnet. Ikke pakk navn inn i ( ) eller [ ] noe sted.`,
             },
             {
               role: "user",
