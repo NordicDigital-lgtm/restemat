@@ -87,8 +87,8 @@ function Index() {
 
   const limitReached = !isDev && usage >= DAILY_LIMIT;
 
-  const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean }>({
-    mutationFn: ({ ingredients, regenerate }) => findRecipeFn({ data: { ingredients, regenerate } }),
+  const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
+    mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
   });
 
   const [clientNotice, setClientNotice] = useState<string | null>(null);
@@ -116,11 +116,19 @@ function Index() {
       return;
     }
     setIngredients(cleaned);
+    // Reset suggestion history when starting a fresh search (not a regenerate)
+    const historyForCall = regenerate ? suggestedTitles : [];
+    if (!regenerate) {
+      setSuggestedTitles([]);
+    }
     setLastSubmitted(cleaned);
     mutation.mutate(
-      { ingredients: cleaned, regenerate },
+      { ingredients: cleaned, regenerate, excludeTitles: historyForCall },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          if (data?.name) {
+            setSuggestedTitles((prev) => (prev.includes(data.name) ? prev : [...prev, data.name]));
+          }
           if (isDev) return;
           const next = readUsage() + 1;
           writeUsage(next);
