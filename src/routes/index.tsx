@@ -136,6 +136,25 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
           </section>
         )}
 
+        {recipe.unusedIngredients.length > 0 && (
+          <section>
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              <Archive className="h-4 w-4" />
+              Passer ikke til denne retten
+            </h3>
+            <ul className="flex flex-wrap gap-2">
+              {recipe.unusedIngredients.map((item) => (
+                <li
+                  key={item}
+                  className="rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground"
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {recipe.missingIngredients.length > 0 && (
           <section>
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-warning">
