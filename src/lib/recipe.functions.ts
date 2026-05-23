@@ -117,6 +117,15 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
                     type: "string",
                     description: "Kort, vennlig norsk forklaring på hvorfor unused_ingredients ikke passer, f.eks. 'Disse passer bedre til en asiatisk rett — prøv dem en annen kveld.' Utelat hvis unused_ingredients er tom.",
                   },
+                  unsafe_ingredients: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Ingredienser som er giftige, helsefarlige eller krever spesialistkunnskap (f.eks. fugu, rå kassava, ville sopp uten sikker ID, rabarbrablader). Skal ALDRI brukes i oppskriften eller dukke opp i unused_ingredients.",
+                  },
+                  unsafe_reason: {
+                    type: "string",
+                    description: "Kort norsk forklaring på hvorfor unsafe_ingredients ble utelatt av sikkerhetsgrunner. Utelat hvis unsafe_ingredients er tom.",
+                  },
                   filtered_out: {
                     type: "array",
                     items: { type: "string" },
