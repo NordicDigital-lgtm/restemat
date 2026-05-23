@@ -116,7 +116,6 @@ function Index() {
           if (data?.name) {
             setSuggestedTitles((prev) => (prev.includes(data.name) ? prev : [...prev, data.name]));
           }
-          if (isDev) return;
           const next = readUsage() + 1;
           writeUsage(next);
           setUsage(next);
