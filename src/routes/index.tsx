@@ -42,8 +42,7 @@ function writeUsage(count: number) {
 
 function isDevMode(): boolean {
   if (typeof window === "undefined") return false;
-  const host = window.location.hostname;
-  return host === "localhost" || host.endsWith(".lovable.app");
+  return window.localStorage.getItem("devMode") === "true";
 }
 
 function Index() {
