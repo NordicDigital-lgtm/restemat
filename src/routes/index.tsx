@@ -206,6 +206,12 @@ function Index() {
         </p>
       )}
 
+      {clientNotice && (
+        <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
+          {clientNotice}
+        </div>
+      )}
+
       {mutation.isError && (
         <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
           {mutation.error.message || "Noe gikk galt. Prøv igjen."}
