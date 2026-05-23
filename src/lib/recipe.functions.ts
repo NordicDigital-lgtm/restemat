@@ -27,6 +27,9 @@ export type RecipeResult = {
   unsafeReason: string | null;
   filteredOut: string[];
   notFoodMessage: string | null;
+  proteinSuggestion: string | null;
+  carbSuggestion: string | null;
+  sauceSuggestion: string | null;
 };
 
 
