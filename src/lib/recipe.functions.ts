@@ -87,20 +87,20 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 8) ENKELTORD-STRENG SJEKK: Hvis brukerens input består av kun ETT enkelt ord (ingen kommaer, ingen liste), må du være EKSTRA streng. Bare fortsett hvis ordet utvilsomt er en gjenkjennelig norsk matingrediens (f.eks. "egg", "pasta", "laks", "ris", "kylling", "potet", "ost", "melk", "brød", "tomat"). Hvis enkeltordet er et personnavn, et tilfeldig substantiv, et engelsk ord som ikke er et matbegrep, eller noe annet som ikke åpenbart er en matvare på norsk, returner error="not_food" og message="Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet." Denne strenge sjekken gjelder KUN enkeltord-input — flerords-/kommaseparert input følger vanlig filtreringslogikk.
 
-10) FORSLAG TIL Å FULLFØRE MÅLTIDET: Bare inkluder en "Forslag til å fullføre måltidet"-seksjon når det faktisk tilfører verdi. Følg disse retningslinjene strengt:
+10) KAN PASSE FINT MED: Etter oppskriften, legg til en kort seksjon med tittelen "Kan passe fint med:" — men bare når det faktisk tilfører verdi.
 
 NÅR SEKSJONEN SKAL VISES:
-- Vis den KUN når brukerens input er ett enkelt protein (kjøtt, fisk, fjørfe) med få eller ingen tilbehørsingredienser.
-- Vis den ALDRI når oppskriften allerede inneholder en saus, sjy eller dressing som del av retten.
-- Vis den ALDRI når brukeren har gitt en blanding av ingredienser som allerede dekker protein + karbohydrat + saus/smakselementer.
-- Vis den ALDRI for eggebaserte retter, bakverk, eller oppskrifter der konseptet i seg selv er komplett (omelett, frittata, curry, gryterett, pastarett etc.).
+- Vis den KUN når oppskriften mangler én eller flere av disse komponentene: protein, karbohydrat, eller saus/dressing.
+- Vis den ALDRI når oppskriften allerede dekker alle tre komponentene naturlig.
+- Vis den ALDRI når retten er komplett i seg selv som konsept (curry, gryterett, pastarett, omelett, frittata etc.).
 
-HVA SOM SKAL INKLUDERES (kun det som faktisk mangler):
-- KARBOHYDRAT (carb_suggestion): Foreslå kun hvis ingen karbohydrat finnes i oppskriftens ingredienser eller fremgangsmåte. Én kort setning, f.eks. "Server gjerne med kokt ris eller ovnsbakte poteter."
-- SAUS (sauce_suggestion): Foreslå kun hvis ingen saus, dressing, sjy eller pannesaus er nevnt noe sted i oppskriften. Hvis brukeren har ingredienser til en enkel pannesaus (smør, fløte, fond), foreslå å lage en. Ellers foreslå et enkelt komplement. Én kort setning.
-- PROTEIN (protein_suggestion): Foreslå ALDRI protein hvis brukerens hovedinput allerede er et protein.
+FORMAT:
+- Enkle kulepunkter, ingen fet skrift som "Protein:" eller "Saus:"
+- Hvert kulepunkt er ett kort forslag, f.eks. "Kokt ris eller ovnsbakte poteter" eller "En enkel pannesaus laget av stekesjyen"
+- Maksimum 3 kulepunkter
+- Gjenta ALDRI noe som allerede er nevnt i oppskriftens ingredienser eller fremgangsmåte
 
-Hvis alle tre komponentene er dekket av oppskriften, utelat seksjonen helt — sett protein_suggestion, carb_suggestion og sauce_suggestion til null/tom.`,
+Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestion, carb_suggestion og sauce_suggestion til null/tom.`,
 
             },
             {
@@ -180,15 +180,15 @@ Hvis alle tre komponentene er dekket av oppskriften, utelat seksjonen helt — s
                   },
                   protein_suggestion: {
                     type: "string",
-                    description: "Kort forslag til protein hvis brukeren mangler protein i ingrediensene. Utelat hvis brukeren allerede har protein.",
+                    description: "Kort forslag til protein uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Stekte kyllingvinger eller grillede scampi'. Utelat hvis brukeren allerede har protein.",
                   },
                   carb_suggestion: {
                     type: "string",
-                    description: "Kort forslag til karbohydrat hvis brukeren mangler karbohydrat i ingrediensene. Utelat hvis brukeren allerede har karbohydrat.",
+                    description: "Kort forslag til karbohydrat uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Kokt ris eller ovnsbakte poteter'. Utelat hvis brukeren allerede har karbohydrat.",
                   },
                   sauce_suggestion: {
                     type: "string",
-                    description: "Kort sausforslag. Alltid inkluder en sausanbefaling — enten en pannesaus fra brukerens ingredienser, eller en enkel saus som passer til retten.",
+                    description: "Kort sausforslag uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'En enkel pannesaus laget av stekesjyen'. Utelat hvis oppskriften allerede inneholder en saus, dressing, sjy eller pannesaus.",
                   },
                   error: {
                     type: "string",
@@ -348,7 +348,7 @@ function stripWrappingBrackets(value: string): string {
   // Remove parenthetical/bracketed content entirely (e.g. "salt (havsalt)" -> "salt"),
   // then strip any remaining stray brackets and trim leading/trailing punctuation.
   return value
-    .replace(/\s*[([{][^)\]}]*[)\]}]\s*/g, " ")
+    .replace(/\s*[(\[{][^)\]}]*[)\]}]\s*/g, " ")
     .replace(/[()[\]{}]/g, " ")
     .replace(/\s+/g, " ")
     .replace(/^[\s,;.:!?\-–—]+|[\s,;.:!?\-–—]+$/g, "")
