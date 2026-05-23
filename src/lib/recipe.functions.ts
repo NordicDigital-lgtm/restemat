@@ -49,6 +49,7 @@ export const findRecipe = createServerFn({ method: "POST" })
         unusedIngredients: [], unusedReason: null, unsafeIngredients: [],
         unsafeReason: null, filteredOut: [],
         notFoodMessage: "Skriv inn det du faktisk har i kjøleskapet eller skapet.",
+        proteinSuggestion: null, carbSuggestion: null, sauceSuggestion: null,
       };
     }
 
@@ -237,6 +238,9 @@ export const findRecipe = createServerFn({ method: "POST" })
         notFoodMessage:
           (typeof parsed.message === "string" && cleanString(parsed.message)) ||
           "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet.",
+        proteinSuggestion: null,
+        carbSuggestion: null,
+        sauceSuggestion: null,
       };
     }
 
@@ -257,6 +261,9 @@ export const findRecipe = createServerFn({ method: "POST" })
       unsafeReason: unsafeIngredients.length > 0 ? cleanString(parsed.unsafe_reason) || null : null,
       filteredOut: toStringArray(parsed.filtered_out),
       notFoodMessage: null,
+      proteinSuggestion: cleanString(parsed.protein_suggestion) || null,
+      carbSuggestion: cleanString(parsed.carb_suggestion) || null,
+      sauceSuggestion: cleanString(parsed.sauce_suggestion) || null,
     };
   });
 
