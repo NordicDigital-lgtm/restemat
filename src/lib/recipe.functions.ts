@@ -51,13 +51,13 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 3) ALDRI finn opp en hovedprotein eller karbohydrat brukeren ikke har. Hvis brukeren kun har krydder/tilbehør, må missing_ingredients inneholde hovedingrediensen.
 
-4) MANGE INGREDIENSER (6 eller flere reelle matvarer etter filtrering): Velg den BESTE kombinasjonen av ingredienser for én sammenhengende rett (bruk maks 6–8 ingredienser). Legg matvarer som ikke passer til denne retten i unused_ingredients. Disse skal være ekte matvarer brukeren oppga, ikke filtrerte elementer.
+4) MANGE INGREDIENSER (15 eller flere reelle matvarer etter filtrering): Velg den BESTE kombinasjonen av ingredienser for én sammenhengende rett. Legg matvarer som ikke passer til denne retten i unused_ingredients. Disse skal være ekte matvarer brukeren oppga, ikke filtrerte elementer. Hvis brukeren har FÆRRE enn 15 matvarer, la unused_ingredients være en TOM liste og bruk alle matvarene normalt.
 
 Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (basert KUN på matvarene som er igjen etter filtrering). Maksimalt 2–3 manglende ingredienser. Gi ALLTID en komplett ingrediensliste med mengder og en nummerert fremgangsmåte med korte, klare steg.`,
             },
             {
               role: "user",
-              content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld. Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvis jeg har 6+ matvarer: hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients).`,
+              content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld. Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvis jeg har 15+ matvarer: hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients).`,
             },
           ],
         tools: [
@@ -106,7 +106,7 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
                   unused_ingredients: {
                     type: "array",
                     items: { type: "string" },
-                    description: "Matvarer brukeren har, men som ikke passer denne retten. Bruk kun når brukeren har 6+ matvarer.",
+                    description: "Matvarer brukeren har, men som ikke passer denne retten. Bruk KUN når brukeren har 15 eller flere matvarer. Ellers tom liste.",
                   },
                   filtered_out: {
                     type: "array",
@@ -152,33 +152,111 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
     }
 
     const json = await res.json();
-    const call = json.choices?.[0]?.message?.tool_calls?.[0];
-    if (!call?.function?.arguments) throw new Error("Uventet svar fra AI");
-    const parsed = JSON.parse(call.function.arguments) as {
-      title: string;
-      description: string;
-      has_ingredients?: string[];
-      missing_ingredients?: string[];
-      full_ingredients?: FullIngredient[];
-      steps?: string[];
-      unused_ingredients?: string[];
-      filtered_out?: string[];
-      low_ingredient_note?: string;
+    const message = json.choices?.[0]?.message;
+    const call = message?.tool_calls?.[0];
+
+    let raw: string | undefined = call?.function?.arguments;
+    if (!raw && typeof message?.content === "string") raw = message.content;
+    if (!raw) throw new Error("Uventet svar fra AI");
+
+    const parsed = extractJson(raw) as {
+      title?: string;
+      description?: string;
+      has_ingredients?: unknown;
+      missing_ingredients?: unknown;
+      full_ingredients?: unknown;
+      steps?: unknown;
+      unused_ingredients?: unknown;
+      filtered_out?: unknown;
+      low_ingredient_note?: unknown;
       error?: string;
       message?: string;
     };
+
     if (parsed.error === "not_food") {
-      throw new Error(parsed.message || "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet.");
+      throw new Error(
+        (typeof parsed.message === "string" && parsed.message) ||
+          "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet.",
+      );
     }
+
     return {
-      name: parsed.title,
-      description: parsed.description,
-      haveIngredients: parsed.has_ingredients ?? [],
-      missingIngredients: (parsed.missing_ingredients ?? []).slice(0, 3),
-      fullIngredients: parsed.full_ingredients ?? [],
-      steps: parsed.steps ?? [],
-      lowIngredientNote: parsed.low_ingredient_note ?? null,
-      unusedIngredients: parsed.unused_ingredients ?? [],
-      filteredOut: parsed.filtered_out ?? [],
+      name: cleanString(parsed.title) || "Middagsforslag",
+      description: cleanString(parsed.description) || "",
+      haveIngredients: toStringArray(parsed.has_ingredients),
+      missingIngredients: toStringArray(parsed.missing_ingredients).slice(0, 3),
+      fullIngredients: toFullIngredients(parsed.full_ingredients),
+      steps: toStringArray(parsed.steps),
+      lowIngredientNote: cleanString(parsed.low_ingredient_note) || null,
+      unusedIngredients: toStringArray(parsed.unused_ingredients),
+      filteredOut: toStringArray(parsed.filtered_out),
     };
   });
+
+function extractJson(raw: string): Record<string, unknown> {
+  const trimmed = raw.trim();
+  try {
+    return JSON.parse(trimmed) as Record<string, unknown>;
+  } catch {
+    // strip markdown fences and isolate the outermost JSON object
+    let cleaned = trimmed
+      .replace(/```json\s*/gi, "")
+      .replace(/```\s*/g, "")
+      .trim();
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start !== -1 && end !== -1 && end > start) {
+      cleaned = cleaned.slice(start, end + 1);
+    }
+    try {
+      return JSON.parse(cleaned) as Record<string, unknown>;
+    } catch {
+      const repaired = cleaned
+        .replace(/,\s*([}\]])/g, "$1")
+        .replace(/[\u0000-\u001F\u007F]/g, " ");
+      return JSON.parse(repaired) as Record<string, unknown>;
+    }
+  }
+}
+
+function cleanString(value: unknown): string {
+  if (typeof value !== "string") return "";
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const out: string[] = [];
+  for (const item of value) {
+    if (typeof item === "string") {
+      const s = cleanString(item);
+      if (s) out.push(s);
+    } else if (item && typeof item === "object") {
+      const o = item as Record<string, unknown>;
+      const s = cleanString(o.name ?? o.ingredient ?? o.item ?? o.value);
+      if (s) out.push(s);
+    }
+  }
+  return out;
+}
+
+function toFullIngredients(value: unknown): FullIngredient[] {
+  if (!Array.isArray(value)) return [];
+  const out: FullIngredient[] = [];
+  for (const item of value) {
+    if (item && typeof item === "object") {
+      const o = item as Record<string, unknown>;
+      const name = cleanString(o.name);
+      if (!name) continue;
+      out.push({
+        amount: cleanString(o.amount),
+        unit: cleanString(o.unit),
+        name,
+      });
+    } else if (typeof item === "string") {
+      const s = cleanString(item);
+      if (s) out.push({ amount: "", unit: "", name: s });
+    }
+  }
+  return out;
+}
