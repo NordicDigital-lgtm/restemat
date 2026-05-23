@@ -72,7 +72,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Restemat – finn middag fra det du har" },
+      { title: "Restemat" },
       {
         name: "description",
         content:
@@ -89,6 +89,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Finn middag fra restene i kjøleskapet.",
       },
       { property: "og:type", content: "website" },
+      { name: "twitter:title", content: "Restemat" },
+      { name: "description", content: "Skriv inn hva du har i kjøleskapet og få en middag du kan lage i kveld." },
+      { property: "og:description", content: "Skriv inn hva du har i kjøleskapet og få en middag du kan lage i kveld." },
+      { name: "twitter:description", content: "Skriv inn hva du har i kjøleskapet og få en middag du kan lage i kveld." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/86ebb377-a9f0-4926-b680-41a613655d4c" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/86ebb377-a9f0-4926-b680-41a613655d4c" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
