@@ -5,7 +5,7 @@ import { useState } from "react";
 import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChefHat, Check, ShoppingBasket } from "lucide-react";
+import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -122,6 +122,44 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {recipe.fullIngredients.length > 0 && (
+          <section>
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground/80">
+              <UtensilsCrossed className="h-4 w-4" />
+              Ingredienser
+            </h3>
+            <ul className="divide-y divide-border/60 rounded-2xl border border-border/60 bg-background/40">
+              {recipe.fullIngredients.map((ing, i) => (
+                <li key={i} className="flex items-baseline gap-3 px-4 py-2.5 text-sm">
+                  <span className="min-w-20 font-medium text-foreground">
+                    {[ing.amount, ing.unit].filter(Boolean).join(" ")}
+                  </span>
+                  <span className="text-muted-foreground">{ing.name}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {recipe.steps.length > 0 && (
+          <section>
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground/80">
+              <ListOrdered className="h-4 w-4" />
+              Fremgangsmåte
+            </h3>
+            <ol className="flex flex-col gap-3">
+              {recipe.steps.map((step, i) => (
+                <li key={i} className="flex gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  <p className="pt-0.5 text-sm leading-relaxed text-foreground/90">{step}</p>
+                </li>
+              ))}
+            </ol>
           </section>
         )}
       </div>

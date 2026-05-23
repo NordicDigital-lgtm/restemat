@@ -5,11 +5,19 @@ const InputSchema = z.object({
   ingredients: z.string().min(1).max(2000),
 });
 
+export type FullIngredient = {
+  amount: string;
+  unit: string;
+  name: string;
+};
+
 export type RecipeResult = {
   name: string;
   description: string;
   haveIngredients: string[];
   missingIngredients: string[];
+  fullIngredients: FullIngredient[];
+  steps: string[];
 };
 
 export const findRecipe = createServerFn({ method: "POST" })
@@ -30,11 +38,11 @@ export const findRecipe = createServerFn({ method: "POST" })
           {
             role: "system",
             content:
-              "Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Maksimalt 2–3 manglende ingredienser.",
+              "Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Maksimalt 2–3 manglende ingredienser. Gi ALLTID en komplett ingrediensliste med mengder (f.eks. '2 dl røde linser', '4 dl kyllingkraft') og en nummerert fremgangsmåte med korte, klare steg.",
           },
           {
             role: "user",
-            content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld.`,
+            content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld. Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), og fremgangsmåte (steps).`,
           },
         ],
         tools: [
@@ -42,31 +50,52 @@ export const findRecipe = createServerFn({ method: "POST" })
             type: "function",
             function: {
               name: "foresla_middag",
-              description: "Returner ett middagsforslag",
+              description: "Returner ett middagsforslag med full oppskrift",
               parameters: {
                 type: "object",
                 properties: {
-                  name: { type: "string", description: "Navn på retten" },
+                  title: { type: "string", description: "Navn på retten" },
                   description: {
                     type: "string",
                     description: "Kort, varm beskrivelse (1–2 setninger)",
                   },
-                  haveIngredients: {
+                  has_ingredients: {
                     type: "array",
                     items: { type: "string" },
                     description: "Ingredienser fra brukerens liste som inngår",
                   },
-                  missingIngredients: {
+                  missing_ingredients: {
                     type: "array",
                     items: { type: "string" },
                     description: "Maks 2–3 ingredienser som mangler",
                   },
+                  full_ingredients: {
+                    type: "array",
+                    description: "Komplett ingrediensliste med mengder",
+                    items: {
+                      type: "object",
+                      properties: {
+                        amount: { type: "string", description: "Mengde, f.eks. '2', '0.5', 'en klype'" },
+                        unit: { type: "string", description: "Enhet, f.eks. 'dl', 'g', 'ss', 'stk'. Kan være tom." },
+                        name: { type: "string", description: "Ingrediensnavn på norsk" },
+                      },
+                      required: ["amount", "unit", "name"],
+                      additionalProperties: false,
+                    },
+                  },
+                  steps: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Fremgangsmåte som korte, klare steg på norsk",
+                  },
                 },
                 required: [
-                  "name",
+                  "title",
                   "description",
-                  "haveIngredients",
-                  "missingIngredients",
+                  "has_ingredients",
+                  "missing_ingredients",
+                  "full_ingredients",
+                  "steps",
                 ],
                 additionalProperties: false,
               },
@@ -87,11 +116,20 @@ export const findRecipe = createServerFn({ method: "POST" })
     const json = await res.json();
     const call = json.choices?.[0]?.message?.tool_calls?.[0];
     if (!call?.function?.arguments) throw new Error("Uventet svar fra AI");
-    const parsed = JSON.parse(call.function.arguments) as RecipeResult;
+    const parsed = JSON.parse(call.function.arguments) as {
+      title: string;
+      description: string;
+      has_ingredients?: string[];
+      missing_ingredients?: string[];
+      full_ingredients?: FullIngredient[];
+      steps?: string[];
+    };
     return {
-      name: parsed.name,
+      name: parsed.title,
       description: parsed.description,
-      haveIngredients: parsed.haveIngredients ?? [],
-      missingIngredients: (parsed.missingIngredients ?? []).slice(0, 3),
+      haveIngredients: parsed.has_ingredients ?? [],
+      missingIngredients: (parsed.missing_ingredients ?? []).slice(0, 3),
+      fullIngredients: parsed.full_ingredients ?? [],
+      steps: parsed.steps ?? [],
     };
   });
