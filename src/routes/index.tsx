@@ -162,9 +162,11 @@ function Index() {
         </div>
       )}
 
-      <p className="text-center text-xs text-muted-foreground">
-        {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
-      </p>
+      {!isDev && (
+        <p className="text-center text-xs text-muted-foreground">
+          {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
+        </p>
+      )}
 
       {mutation.isError && (
 
