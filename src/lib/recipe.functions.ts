@@ -182,11 +182,11 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
                   },
                   protein_suggestion: {
                     type: "string",
-                    description: "Kort forslag til protein uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Stekte kyllingvinger eller grillede scampi'. Utelat hvis brukeren allerede har protein.",
+                    description: "Kort forslag til protein uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Stekte kyllingvinger eller grillede scampi'. ALDRI foreslå protein hvis brukerens input inneholder kjøtt, fisk, fjørfe, egg, eller belgvekster/linser/bønner.",
                   },
                   carb_suggestion: {
                     type: "string",
-                    description: "Kort forslag til karbohydrat uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Kokt ris eller ovnsbakte poteter'. Utelat hvis brukeren allerede har karbohydrat.",
+                    description: "Kort forslag til karbohydrat uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Kokt ris eller ovnsbakte poteter'. ALLTID foreslå når oppskriften mangler karbohydrat — inkludert curry og gryterett der ris/naan er naturlig. Til egg: foreslå ALLTID stekte eller ovnsbakte poteter, ALDRI kokte.",
                   },
                   sauce_suggestion: {
                     type: "string",
