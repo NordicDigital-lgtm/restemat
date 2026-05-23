@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw } from "lucide-react";
@@ -267,7 +268,9 @@ function Index() {
         </>
       )}
 
+      <InstallPrompt />
     </main>
+
   );
 }
 
