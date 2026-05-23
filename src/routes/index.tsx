@@ -49,6 +49,7 @@ function isDevMode(): boolean {
 function Index() {
   const [ingredients, setIngredients] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState("");
+  const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isDev, setIsDev] = useState(false);
