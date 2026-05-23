@@ -100,17 +100,34 @@ function Index() {
     mutationFn: ({ ingredients, regenerate }) => findRecipeFn({ data: { ingredients, regenerate } }),
   });
 
+  const [clientNotice, setClientNotice] = useState<string | null>(null);
+
+  const sanitizeIngredients = (raw: string): string => {
+    return raw
+      .split(/[,\n;]+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 2 && /^[a-zA-ZæøåÆØÅ0-9\s.\-'/&]+$/.test(t))
+      .join(", ");
+  };
+
   const submit = (value: string, regenerate?: boolean) => {
-    const v = value.trim();
-    if (!v) return;
+    const cleaned = sanitizeIngredients(value);
+    if (!cleaned) {
+      setClientNotice(
+        "Du har lite å jobbe med — skriv inn norske matvarer du har hjemme.",
+      );
+      mutation.reset();
+      return;
+    }
+    setClientNotice(null);
     if (!isDev && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
-    setIngredients(v);
-    setLastSubmitted(v);
+    setIngredients(cleaned);
+    setLastSubmitted(cleaned);
     mutation.mutate(
-      { ingredients: v, regenerate },
+      { ingredients: cleaned, regenerate },
       {
         onSuccess: () => {
           if (isDev) return;
@@ -124,6 +141,7 @@ function Index() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +204,12 @@ function Index() {
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
+      )}
+
+      {clientNotice && (
+        <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
+          {clientNotice}
+        </div>
       )}
 
       {mutation.isError && (
