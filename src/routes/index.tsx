@@ -6,7 +6,7 @@ import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw } from "lucide-react";
+import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw, Lightbulb } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
