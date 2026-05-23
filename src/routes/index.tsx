@@ -40,11 +40,19 @@ function writeUsage(count: number) {
   );
 }
 
+function isDevMode(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  return host === "localhost" || host.endsWith(".lovable.app");
+}
+
 function Index() {
   const [ingredients, setIngredients] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState("");
   const [usage, setUsage] = useState(0);
   const findRecipeFn = useServerFn(findRecipe);
+
+  const isDev = isDevMode();
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.search.includes("reset=true")) {
@@ -55,6 +63,7 @@ function Index() {
 
   useEffect(() => {
     setUsage(readUsage());
+    if (isDev) return;
     const now = new Date();
     const midnight = new Date(now);
     midnight.setHours(24, 0, 0, 0);
@@ -65,7 +74,7 @@ function Index() {
     return () => clearTimeout(t);
   }, []);
 
-  const limitReached = usage >= DAILY_LIMIT;
+  const limitReached = !isDev && usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean }>({
     mutationFn: ({ ingredients, regenerate }) => findRecipeFn({ data: { ingredients, regenerate } }),
@@ -74,7 +83,7 @@ function Index() {
   const submit = (value: string, regenerate?: boolean) => {
     const v = value.trim();
     if (!v) return;
-    if (readUsage() >= DAILY_LIMIT) {
+    if (!isDev && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
@@ -84,6 +93,7 @@ function Index() {
       { ingredients: v, regenerate },
       {
         onSuccess: () => {
+          if (isDev) return;
           const next = readUsage() + 1;
           writeUsage(next);
           setUsage(next);
@@ -152,9 +162,11 @@ function Index() {
         </div>
       )}
 
-      <p className="text-center text-xs text-muted-foreground">
-        {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
-      </p>
+      {!isDev && (
+        <p className="text-center text-xs text-muted-foreground">
+          {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
+        </p>
+      )}
 
       {mutation.isError && (
 
