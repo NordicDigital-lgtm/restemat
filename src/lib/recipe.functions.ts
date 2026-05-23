@@ -108,6 +108,11 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
                     items: { type: "string" },
                     description: "Matvarer brukeren har, men som ikke passer denne retten. Bruk kun når brukeren har 6+ matvarer.",
                   },
+                  filtered_out: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Elementer fra brukerens input som er ikke-mat (rengjøring, hygiene, merkevarer som Zalo/Domestos/Fairy, nonsens). Bruk brukerens egen skrivemåte. Tom liste hvis alt er mat.",
+                  },
                   low_ingredient_note: {
                     type: "string",
                     description: "Vennlig melding når brukeren har svært få ingredienser (1–2). Kun inkluder hvis relevant.",
