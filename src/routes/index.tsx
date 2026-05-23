@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -267,6 +268,7 @@ function Index() {
         </>
       )}
 
+      <InstallPrompt />
     </main>
   );
 }
