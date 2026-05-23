@@ -48,11 +48,13 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 3) ALDRI finn opp en hovedprotein eller karbohydrat brukeren ikke har. Hvis brukeren kun har krydder/tilbehør, må missing_ingredients inneholde hovedingrediensen.
 
+4) MANGE INGREDIENSER (6 eller flere reelle matvarer): Velg den BESTE kombinasjonen av ingredienser for én sammenhengende rett (bruk maks 6–8 ingredienser fra brukerens liste). Legg de matvarene brukeren har men som IKKE passer til denne retten i unused_ingredients. Disse skal være ekte matvarer brukeren oppga, ikke noe annet.
+
 Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Maksimalt 2–3 manglende ingredienser. Gi ALLTID en komplett ingrediensliste med mengder og en nummerert fremgangsmåte med korte, klare steg.`,
             },
             {
               role: "user",
-              content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld. Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), og fremgangsmåte (steps).`,
+              content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld. Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvis jeg har 6+ matvarer: hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients).`,
             },
           ],
         tools: [
