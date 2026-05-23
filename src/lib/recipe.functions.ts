@@ -217,6 +217,9 @@ export const findRecipe = createServerFn({ method: "POST" })
       unsafe_reason?: unknown;
       filtered_out?: unknown;
       low_ingredient_note?: unknown;
+      protein_suggestion?: unknown;
+      carb_suggestion?: unknown;
+      sauce_suggestion?: unknown;
       error?: string;
       message?: string;
     };
