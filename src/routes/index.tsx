@@ -83,10 +83,15 @@ function Index() {
 
   const enableTestPaywall = () => {
     if (typeof window === "undefined") return;
-    window.sessionStorage.setItem("testPaywall", "true");
+    if (window.sessionStorage.getItem("testPaywall") === "true") {
+      window.sessionStorage.removeItem("testPaywall");
+    } else {
+      window.sessionStorage.setItem("testPaywall", "true");
+    }
     window.localStorage.removeItem(STORAGE_KEY);
     window.location.reload();
   };
+
 
 
   const limitReached = !isDev && usage >= DAILY_LIMIT;
