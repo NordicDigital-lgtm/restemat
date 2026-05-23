@@ -31,7 +31,7 @@ function Oppgrader() {
         </ul>
       </div>
 
-      <a href="https://buy.stripe.com/test_6oU7sLaE1ae59qx8Z35J600" target="_blank" rel="noopener noreferrer">
+      <a href="https://buy.stripe.com/fZufZiaFF8nh5wt3sK2Ry00" target="_blank" rel="noopener noreferrer">
         <Button size="lg" className="h-12 w-full rounded-xl text-base font-semibold">
           Oppgrader nå →
         </Button>
