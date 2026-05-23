@@ -194,7 +194,13 @@ function Index() {
         </div>
       )}
 
-      {mutation.data && (
+      {mutation.data?.notFoodMessage && (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          {mutation.data.notFoodMessage}
+        </div>
+      )}
+
+      {mutation.data && !mutation.data.notFoodMessage && (
         <>
           {mutation.data.filteredOut.length > 0 && (
             <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm text-muted-foreground">
