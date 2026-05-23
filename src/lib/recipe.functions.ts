@@ -279,12 +279,30 @@ function extractJson(raw: string): Record<string, unknown> {
   }
 }
 
+function stripEmoji(value: string): string {
+  // Remove emoji and pictographs silently
+  return value
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, "")
+    .replace(/[\u{2600}-\u{27BF}]/gu, "")
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, "")
+    .replace(/[\u{1F1E6}-\u{1F1FF}]/gu, "")
+    .replace(/\p{Extended_Pictographic}/gu, "");
+}
+
 function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   // Strip characters outside Latin scripts (e.g. CJK leakage from the model).
   // Keep Basic Latin, Latin-1 Supplement, Latin Extended-A/B, general punctuation, currency.
-  return value
+  return stripEmoji(value)
     .replace(/[^\u0000-\u024F\u2000-\u206F\u20A0-\u20CF]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stripWrappingBrackets(value: string): string {
+  // Remove parentheses/brackets around or inside ingredient names
+  return value
+    .replace(/[()[\]{}]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -294,11 +312,11 @@ function toStringArray(value: unknown): string[] {
   const out: string[] = [];
   for (const item of value) {
     if (typeof item === "string") {
-      const s = cleanString(item);
+      const s = stripWrappingBrackets(cleanString(item));
       if (s) out.push(s);
     } else if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
-      const s = cleanString(o.name ?? o.ingredient ?? o.item ?? o.value);
+      const s = stripWrappingBrackets(cleanString(o.name ?? o.ingredient ?? o.item ?? o.value));
       if (s) out.push(s);
     }
   }
