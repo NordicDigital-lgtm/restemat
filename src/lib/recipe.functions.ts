@@ -25,7 +25,9 @@ export type RecipeResult = {
   unsafeIngredients: string[];
   unsafeReason: string | null;
   filteredOut: string[];
+  notFoodMessage: string | null;
 };
+
 
 export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
