@@ -329,7 +329,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
   for (const item of value) {
     if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
-      const name = cleanString(o.name);
+      const name = stripWrappingBrackets(cleanString(o.name));
       if (!name) continue;
       out.push({
         amount: cleanString(o.amount),
@@ -337,7 +337,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
         name,
       });
     } else if (typeof item === "string") {
-      const s = cleanString(item);
+      const s = stripWrappingBrackets(cleanString(item));
       if (s) out.push({ amount: "", unit: "", name: s });
     }
   }
