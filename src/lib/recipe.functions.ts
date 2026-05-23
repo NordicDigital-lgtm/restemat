@@ -97,6 +97,19 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Ma
                     items: { type: "string" },
                     description: "Fremgangsmåte som korte, klare steg på norsk",
                   },
+                  low_ingredient_note: {
+                    type: "string",
+                    description: "Vennlig melding når brukeren har svært få ingredienser (1–2). Kun inkluder hvis relevant.",
+                  },
+                  error: {
+                    type: "string",
+                    enum: ["not_food"],
+                    description: "Sett til 'not_food' hvis input ikke er matvarer. Ellers utelat.",
+                  },
+                  message: {
+                    type: "string",
+                    description: "Feilmelding når error er satt. Ellers utelat.",
+                  },
                 },
                 required: [
                   "title",
