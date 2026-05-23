@@ -3,6 +3,7 @@ import { z } from "zod";
 
 const InputSchema = z.object({
   ingredients: z.string().min(1).max(2000),
+  regenerate: z.boolean().optional(),
 });
 
 export type FullIngredient = {
@@ -64,7 +65,7 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
             },
             {
               role: "user",
-              content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld. Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`,
+              content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`,
             },
           ],
         tools: [

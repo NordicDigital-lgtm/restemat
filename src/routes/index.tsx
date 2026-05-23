@@ -5,7 +5,7 @@ import { useState } from "react";
 import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight } from "lucide-react";
+import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -13,17 +13,19 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [ingredients, setIngredients] = useState("");
+  const [lastSubmitted, setLastSubmitted] = useState("");
   const findRecipeFn = useServerFn(findRecipe);
 
-  const mutation = useMutation<RecipeResult, Error, string>({
-    mutationFn: (value: string) => findRecipeFn({ data: { ingredients: value } }),
+  const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean }>({
+    mutationFn: ({ ingredients, regenerate }) => findRecipeFn({ data: { ingredients, regenerate } }),
   });
 
-  const submit = (value: string) => {
+  const submit = (value: string, regenerate?: boolean) => {
     const v = value.trim();
     if (!v) return;
     setIngredients(v);
-    mutation.mutate(v);
+    setLastSubmitted(v);
+    mutation.mutate({ ingredients: v, regenerate });
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -93,19 +95,34 @@ function Index() {
             </div>
           )}
           <RecipeCard recipe={mutation.data} />
-          {mutation.data.unusedIngredients.length > 0 && (
-            <Button
-              type="button"
-              size="lg"
-              variant="secondary"
-              disabled={mutation.isPending}
-              onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
-              className="h-12 rounded-xl text-base font-semibold"
-            >
-              Lag noe med restene
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex flex-col gap-3">
+            {mutation.data.unusedIngredients.length > 0 && (
+              <Button
+                type="button"
+                size="lg"
+                variant="secondary"
+                disabled={mutation.isPending}
+                onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
+                className="h-12 rounded-xl text-base font-semibold"
+              >
+                Lag noe med restene
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+            {lastSubmitted && (
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                disabled={mutation.isPending}
+                onClick={() => submit(lastSubmitted, true)}
+                className="h-12 rounded-xl text-base font-semibold"
+              >
+                Regenerer oppskrift
+                <RefreshCw className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </>
       )}
     </main>
