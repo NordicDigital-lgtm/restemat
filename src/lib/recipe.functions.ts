@@ -58,6 +58,8 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 5) ÉN SAMMENHENGENDE RETT (gjelder ALLTID, uansett antall ingredienser): Velg den BESTE kombinasjonen av brukerens trygge matvarer for ÉN sammenhengende rett. Ingredienser som ikke passer — uansett grunn (matkulturkollisjon, smakskonflikt, kategorimismatch) — legges i unused_ingredients. Sett ALLTID unused_reason til én kort, vennlig norsk setning som forklarer hvorfor (f.eks. "Disse passer bedre til en asiatisk rett — prøv dem en annen kveld." eller "Disse passer bedre i en dessert."). Hvis ALT passer, la unused_ingredients være TOM og utelat unused_reason. Det finnes INGEN antallsterskel — denne logikken gjelder hver gang.
 
+6) MEIERIPRODUKTER SOM MATLAGINGSINGREDIENSER: Når melk, fløte, kremfløte, rømme, crème fraîche, yoghurt, smør, ost eller lignende nøytrale meieriprodukter dukker opp sammen med salte/savory ingredienser, behandle dem som BRUKBARE matlagingsingredienser (sauser, gratenger, supper, stuinger, paier, bakst osv.) — IKKE som drikker som skal parkeres i unused_ingredients. Bare legg meieriprodukter i unused_ingredients hvis de virkelig kolliderer med den valgte retten (f.eks. fløte i en lett asiatisk wok der det ikke hører hjemme).
+
 Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (basert KUN på trygge matvarer som er igjen etter filtrering og sikkerhet). Maksimalt 2–3 manglende ingredienser. Gi ALLTID en komplett ingrediensliste med mengder og en nummerert fremgangsmåte med korte, klare steg.`,
             },
             {
