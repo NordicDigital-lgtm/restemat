@@ -82,6 +82,11 @@ function Index() {
 
       {mutation.data && (
         <>
+          {mutation.data.filteredOut.length > 0 && (
+            <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm text-muted-foreground">
+              Vi fjernet følgende fra listen din siden det ikke er matvarer: <span className="font-medium text-foreground">{mutation.data.filteredOut.join(", ")}</span>. Oppskriften er basert på resten.
+            </div>
+          )}
           {mutation.data.lowIngredientNote && (
             <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
               {mutation.data.lowIngredientNote}
