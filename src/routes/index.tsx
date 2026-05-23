@@ -41,38 +41,27 @@ function writeUsage(count: number) {
   );
 }
 
-function isDevMode(): boolean {
-  if (typeof window === "undefined") return false;
-  if (window.sessionStorage.getItem("testPaywall") === "true") return false;
-  return window.localStorage.getItem("devMode") === "true";
-}
-
 function Index() {
   const [ingredients, setIngredients] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState("");
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [isDev, setIsDev] = useState(false);
   const findRecipeFn = useServerFn(findRecipe);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!window.localStorage.getItem("devMode")) {
-      window.localStorage.setItem("devMode", "true");
-    }
     if (window.location.search.includes("reset=true")) {
       window.localStorage.removeItem(STORAGE_KEY);
       window.location.replace(window.location.pathname);
       return;
     }
-    setIsDev(isDevMode());
     setUsage(readUsage());
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted || isDev) return;
+    if (!mounted) return;
     const now = new Date();
     const midnight = new Date(now);
     midnight.setHours(24, 0, 0, 0);
@@ -81,12 +70,9 @@ function Index() {
       setUsage(0);
     }, midnight.getTime() - now.getTime());
     return () => clearTimeout(t);
-  }, [mounted, isDev]);
+  }, [mounted]);
 
-
-
-
-  const limitReached = !isDev && usage >= DAILY_LIMIT;
+  const limitReached = usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
     mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
@@ -112,7 +98,7 @@ function Index() {
       return;
     }
     setClientNotice(null);
-    if (!isDev && readUsage() >= DAILY_LIMIT) {
+    if (readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
@@ -130,7 +116,6 @@ function Index() {
           if (data?.name) {
             setSuggestedTitles((prev) => (prev.includes(data.name) ? prev : [...prev, data.name]));
           }
-          if (isDev) return;
           const next = readUsage() + 1;
           writeUsage(next);
           setUsage(next);
@@ -200,7 +185,7 @@ function Index() {
         </div>
       )}
 
-      {mounted && !isDev && (
+      {mounted && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
