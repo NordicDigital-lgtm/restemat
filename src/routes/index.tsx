@@ -5,7 +5,7 @@ import { useState } from "react";
 import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed } from "lucide-react";
+import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -19,10 +19,19 @@ function Index() {
     mutationFn: (value: string) => findRecipeFn({ data: { ingredients: value } }),
   });
 
+  const submit = (value: string) => {
+    const v = value.trim();
+    if (!v) return;
+    setIngredients(v);
+    mutation.mutate(v);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ingredients.trim()) return;
-    mutation.mutate(ingredients.trim());
+    submit(ingredients);
   };
 
   return (
@@ -79,6 +88,19 @@ function Index() {
             </div>
           )}
           <RecipeCard recipe={mutation.data} />
+          {mutation.data.unusedIngredients.length > 0 && (
+            <Button
+              type="button"
+              size="lg"
+              variant="secondary"
+              disabled={mutation.isPending}
+              onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
+              className="h-12 rounded-xl text-base font-semibold"
+            >
+              Lag noe med restene
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </>
       )}
     </main>
@@ -106,6 +128,25 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
                   key={item}
                   className="rounded-full bg-success/12 px-3 py-1.5 text-sm font-medium text-success"
                   style={{ backgroundColor: "color-mix(in oklab, var(--success) 14%, transparent)" }}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {recipe.unusedIngredients.length > 0 && (
+          <section>
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              <Archive className="h-4 w-4" />
+              Passer ikke til denne retten
+            </h3>
+            <ul className="flex flex-wrap gap-2">
+              {recipe.unusedIngredients.map((item) => (
+                <li
+                  key={item}
+                  className="rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground"
                 >
                   {item}
                 </li>
