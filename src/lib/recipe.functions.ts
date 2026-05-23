@@ -79,6 +79,8 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 5) ÉN SAMMENHENGENDE RETT (gjelder ALLTID, uansett antall ingredienser): Velg den BESTE kombinasjonen av brukerens trygge matvarer for ÉN sammenhengende rett. BRUK ALLTID så mange av brukerens ingredienser som mulig i selve oppskriften — ingen ingrediens skal stå ubrukt hvis den med rimelighet kan passe inn i retten. Stivelsesholdige grønnsaker (poteter, søtpoteter, pastinakk, sellerirot osv.) skal behandles som HOVEDINGREDIENSER og brukes i selve retten — ALDRI parker poteter i unused_ingredients eller foreslå dem i "Kan passe fint med:" når brukeren faktisk har dem. Flytt KUN en ingrediens til unused_ingredients hvis den genuint kolliderer med retten (matkulturkollisjon, smakskonflikt, kategorimismatch). Ikke parker ingredienser der bare fordi oppskriften allerede har en karbohydratkilde — bygg heller retten rundt det brukeren faktisk har. Sett ALLTID unused_reason til én kort, vennlig norsk setning som forklarer hvorfor (f.eks. "Disse passer bedre til en asiatisk rett — prøv dem en annen kveld."). Hvis ALT passer, la unused_ingredients være TOM og utelat unused_reason.
 
+5b) RENE INGREDIENSNAVN I unused_ingredients: Når du lister ingredienser i unused_ingredients, skriv KUN det rene navnet akkurat slik brukeren skrev det — ingen tilleggstekst, kategorimerkelapper eller suffikser som "(meieriprodukt)", "(ikke brukt)" eller lignende. Forklaringer hører hjemme i unused_reason, ikke i ingrediensnavnet.
+
 6) MEIERIPRODUKTER SOM MATLAGINGSINGREDIENSER: Når melk, fløte, kremfløte, rømme, crème fraîche, yoghurt, smør, ost eller lignende nøytrale meieriprodukter dukker opp sammen med salte/savory ingredienser, behandle dem som BRUKBARE matlagingsingredienser (sauser, gratenger, supper, stuinger, paier, bakst osv.) — IKKE som drikker som skal parkeres i unused_ingredients. Bare legg meieriprodukter i unused_ingredients hvis de virkelig kolliderer med den valgte retten (f.eks. fløte i en lett asiatisk wok der det ikke hører hjemme).
 
 7) INGREDIENSNAVN: Skriv ingrediensnavn rent uten parenteser eller hakeparenteser rundt navnet, og uten forklaringer i parentes. Ikke pakk navn inn i ( ) eller [ ] noe sted, og ikke legg til tolkninger som "(antagelig X)" eller lignende — bare skriv det rene ingrediensnavnet du har valgt.
@@ -92,7 +94,6 @@ export const findRecipe = createServerFn({ method: "POST" })
 REGEL-REKKEFØLGE (viktigst først):
 - PROTEIN: ALDRI foreslå protein hvis brukerens input allerede inneholder protein (kjøtt, fisk, fjørfe, egg, belgvekster/linser/bønner). Dette er den høyest prioriterte regelen.
 - KARBOHYDRAT: ALLTID foreslå karbohydrat når oppskriften ikke inneholder noe karbohydrat — inkludert curry, gryterett, og sausbaserte retter der ris, naan eller flatbrød ville vært naturlig. Ikke hopp over denne bare fordi retten har en saus.
-- KARBOHYDRAT TIL EGG: Når du foreslår karbohydrat til egg, foreslå ALLTID stekte eller ovnsbakte poteter — ALDRI kokte poteter.
 - SAUS: Foreslå saus bare hvis oppskriften ikke inneholder saus, dressing, sjy eller pannesaus fra før.
 
 FORMAT:
@@ -187,7 +188,7 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
                   },
                   carb_suggestion: {
                     type: "string",
-                    description: "Kort forslag til karbohydrat uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Kokt ris eller ovnsbakte poteter'. ALLTID foreslå når oppskriften mangler karbohydrat — inkludert curry og gryterett der ris/naan er naturlig. Til egg: foreslå ALLTID stekte eller ovnsbakte poteter, ALDRI kokte.",
+                    description: "Kort forslag til karbohydrat uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Kokt ris eller ovnsbakte poteter'. ALLTID foreslå når oppskriften mangler karbohydrat — inkludert curry og gryterett der ris/naan er naturlig.",
                   },
                   sauce_suggestion: {
                     type: "string",
