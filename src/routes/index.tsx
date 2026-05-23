@@ -47,6 +47,13 @@ function Index() {
   const findRecipeFn = useServerFn(findRecipe);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("reset=true")) {
+      window.localStorage.removeItem(STORAGE_KEY);
+      window.location.replace(window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
     setUsage(readUsage());
     const now = new Date();
     const midnight = new Date(now);
