@@ -35,6 +35,18 @@ export const findRecipe = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY mangler");
 
+    // Silently strip emoji from input before processing
+    const sanitizedIngredients = stripEmoji(data.ingredients).trim();
+    if (!sanitizedIngredients) {
+      return {
+        name: "", description: "", haveIngredients: [], missingIngredients: [],
+        fullIngredients: [], steps: [], lowIngredientNote: null,
+        unusedIngredients: [], unusedReason: null, unsafeIngredients: [],
+        unsafeReason: null, filteredOut: [],
+        notFoodMessage: "Skriv inn det du faktisk har i kjøleskapet eller skapet.",
+      };
+    }
+
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
