@@ -101,6 +101,7 @@ FORMAT:
 - Maksimum 3 kulepunkter
 - ALDRI inkluder et kulepunkt som forklarer hvorfor noe IKKE foreslås (f.eks. "Retten inneholder allerede en kremet saus"). Enten foreslå noe, eller unnlat det helt.
 - Gjenta ALDRI noe som allerede er nevnt i oppskriftens ingredienser eller fremgangsmåte
+- ALDRI foreslå en ingrediens i "Kan passe fint med:" som brukeren allerede har oppgitt som input. Hvis brukeren har poteter, ris, pasta, brød eller annen karbohydrat — bruk det i retten i stedet for å foreslå det her.
 
 Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestion, carb_suggestion og sauce_suggestion til null/tom.`,
 
