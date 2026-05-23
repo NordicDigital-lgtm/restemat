@@ -155,7 +155,7 @@ function Index() {
         </div>
         <h1 className="text-4xl font-semibold sm:text-5xl">Restemat</h1>
         <p className="mt-3 max-w-sm text-balance text-muted-foreground">
-          Fra rester til middag på ett forslag.
+          Fra rester til middag, helt enkelt.
         </p>
       </header>
 
