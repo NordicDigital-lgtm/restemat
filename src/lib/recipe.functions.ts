@@ -35,6 +35,18 @@ export const findRecipe = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY mangler");
 
+    // Silently strip emoji from input before processing
+    const sanitizedIngredients = stripEmoji(data.ingredients).trim();
+    if (!sanitizedIngredients) {
+      return {
+        name: "", description: "", haveIngredients: [], missingIngredients: [],
+        fullIngredients: [], steps: [], lowIngredientNote: null,
+        unusedIngredients: [], unusedReason: null, unsafeIngredients: [],
+        unsafeReason: null, filteredOut: [],
+        notFoodMessage: "Skriv inn det du faktisk har i kjøleskapet eller skapet.",
+      };
+    }
+
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -63,11 +75,13 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 6) MEIERIPRODUKTER SOM MATLAGINGSINGREDIENSER: Når melk, fløte, kremfløte, rømme, crème fraîche, yoghurt, smør, ost eller lignende nøytrale meieriprodukter dukker opp sammen med salte/savory ingredienser, behandle dem som BRUKBARE matlagingsingredienser (sauser, gratenger, supper, stuinger, paier, bakst osv.) — IKKE som drikker som skal parkeres i unused_ingredients. Bare legg meieriprodukter i unused_ingredients hvis de virkelig kolliderer med den valgte retten (f.eks. fløte i en lett asiatisk wok der det ikke hører hjemme).
 
-Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (basert KUN på trygge matvarer som er igjen etter filtrering og sikkerhet). Maksimalt 2–3 manglende ingredienser. Gi ALLTID en komplett ingrediensliste med mengder og en nummerert fremgangsmåte med korte, klare steg.`,
+7) FREMMEDE SKRIFTSPRÅK: Hvis brukeren skriver matvarer med ikke-latinske tegn (kyrillisk, arabisk, kinesisk, japansk, koreansk osv.), oversett dem til norsk og bruk de norske navnene i alle felter. Hvis et ord på et fremmed språk ikke er gjenkjennelig som mat, ignorer det stille — IKKE legg det i filtered_out.
+
+8) INGREDIENSNAVN: Skriv ingrediensnavn rent uten parenteser eller hakeparenteser rundt navnet. Ikke pakk navn inn i ( ) eller [ ] noe sted.`,
             },
             {
               role: "user",
-              content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`,
+              content: `Jeg har dette hjemme: ${sanitizedIngredients}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`,
             },
           ],
         tools: [
@@ -265,12 +279,30 @@ function extractJson(raw: string): Record<string, unknown> {
   }
 }
 
+function stripEmoji(value: string): string {
+  // Remove emoji and pictographs silently
+  return value
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, "")
+    .replace(/[\u{2600}-\u{27BF}]/gu, "")
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, "")
+    .replace(/[\u{1F1E6}-\u{1F1FF}]/gu, "")
+    .replace(/\p{Extended_Pictographic}/gu, "");
+}
+
 function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   // Strip characters outside Latin scripts (e.g. CJK leakage from the model).
   // Keep Basic Latin, Latin-1 Supplement, Latin Extended-A/B, general punctuation, currency.
-  return value
+  return stripEmoji(value)
     .replace(/[^\u0000-\u024F\u2000-\u206F\u20A0-\u20CF]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stripWrappingBrackets(value: string): string {
+  // Remove parentheses/brackets around or inside ingredient names
+  return value
+    .replace(/[()[\]{}]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -280,11 +312,11 @@ function toStringArray(value: unknown): string[] {
   const out: string[] = [];
   for (const item of value) {
     if (typeof item === "string") {
-      const s = cleanString(item);
+      const s = stripWrappingBrackets(cleanString(item));
       if (s) out.push(s);
     } else if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
-      const s = cleanString(o.name ?? o.ingredient ?? o.item ?? o.value);
+      const s = stripWrappingBrackets(cleanString(o.name ?? o.ingredient ?? o.item ?? o.value));
       if (s) out.push(s);
     }
   }
@@ -297,7 +329,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
   for (const item of value) {
     if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
-      const name = cleanString(o.name);
+      const name = stripWrappingBrackets(cleanString(o.name));
       if (!name) continue;
       out.push({
         amount: cleanString(o.amount),
@@ -305,7 +337,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
         name,
       });
     } else if (typeof item === "string") {
-      const s = cleanString(item);
+      const s = stripWrappingBrackets(cleanString(item));
       if (s) out.push({ amount: "", unit: "", name: s });
     }
   }
