@@ -47,6 +47,13 @@ function Index() {
   const findRecipeFn = useServerFn(findRecipe);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("reset=true")) {
+      window.localStorage.removeItem(STORAGE_KEY);
+      window.location.replace(window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
     setUsage(readUsage());
     const now = new Date();
     const midnight = new Date(now);
@@ -136,7 +143,7 @@ function Index() {
       {limitReached && (
         <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
           <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
-          <p className="mt-1 text-sm text-[#A08060]">Få ubegrenset tilgang og aldri gå tom for middagsideer</p>
+          <p className="mt-1 text-sm text-[#A08060]">Lag mat av restene hver dag, uten begrensninger</p>
           <Link to="/oppgrader">
             <Button className="mt-4 h-11 rounded-full bg-[#C4785A] px-6 text-sm font-semibold text-white hover:bg-[#B06A4E]">
               Oppgrader nå →
