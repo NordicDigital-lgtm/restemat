@@ -18,6 +18,7 @@ export type RecipeResult = {
   missingIngredients: string[];
   fullIngredients: FullIngredient[];
   steps: string[];
+  lowIngredientNote: string | null;
 };
 
 export const findRecipe = createServerFn({ method: "POST" })
