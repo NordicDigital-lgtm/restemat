@@ -402,25 +402,25 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
           <section className="rounded-2xl border border-border/60 bg-muted/40 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground/80">
               <Lightbulb className="h-4 w-4" />
-              Forslag til å fullføre måltidet
+              Kan passe fint med:
             </h3>
             <ul className="flex flex-col gap-2 text-sm text-foreground/90">
               {recipe.proteinSuggestion && (
                 <li className="flex gap-2">
                   <span className="text-muted-foreground">•</span>
-                  <span><strong>Protein:</strong> {recipe.proteinSuggestion}</span>
+                  <span>{recipe.proteinSuggestion}</span>
                 </li>
               )}
               {recipe.carbSuggestion && (
                 <li className="flex gap-2">
                   <span className="text-muted-foreground">•</span>
-                  <span><strong>Karbohydrat:</strong> {recipe.carbSuggestion}</span>
+                  <span>{recipe.carbSuggestion}</span>
                 </li>
               )}
               {recipe.sauceSuggestion && (
                 <li className="flex gap-2">
                   <span className="text-muted-foreground">•</span>
-                  <span><strong>Saus:</strong> {recipe.sauceSuggestion}</span>
+                  <span>{recipe.sauceSuggestion}</span>
                 </li>
               )}
             </ul>
