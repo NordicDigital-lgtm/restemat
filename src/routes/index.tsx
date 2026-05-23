@@ -106,7 +106,7 @@ function Index() {
     return raw
       .split(/[,\n;]+/)
       .map((t) => t.trim())
-      .filter((t) => t.length >= 2 && /^[a-zA-ZæøåÆØÅ0-9\s.\-'/&]+$/.test(t))
+      .filter((t) => t.length >= 3 && /^[a-zA-ZæøåÆØÅ0-9\s.\-'/&]+$/.test(t))
       .join(", ");
   };
 
@@ -238,18 +238,20 @@ function Index() {
           )}
           <RecipeCard recipe={mutation.data} />
           <div className="flex flex-col gap-3">
-            {mutation.data.unusedIngredients.length > 0 && (
-              <Button
-                type="button"
-                size="lg"
-                disabled={mutation.isPending || limitReached}
-                onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
-                className="h-12 rounded-full bg-[#7A9E7E] text-base font-bold text-white hover:bg-[#6A8E6E]"
-              >
-                Lag noe med restene
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
+            <Button
+              type="button"
+              size="lg"
+              disabled={mutation.isPending || limitReached}
+              onClick={() => submit(
+                (mutation.data!.unusedIngredients.length > 0
+                  ? mutation.data!.unusedIngredients.join(", ")
+                  : lastSubmitted) || ""
+              )}
+              className="h-12 rounded-full bg-[#7A9E7E] text-base font-bold text-white hover:bg-[#6A8E6E]"
+            >
+              Lag noe med restene
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
             {lastSubmitted && (
               <Button
                 type="button"
