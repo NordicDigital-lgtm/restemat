@@ -21,6 +21,8 @@ export type RecipeResult = {
   lowIngredientNote: string | null;
   unusedIngredients: string[];
   unusedReason: string | null;
+  unsafeIngredients: string[];
+  unsafeReason: string | null;
   filteredOut: string[];
 };
 
