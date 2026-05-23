@@ -98,7 +98,7 @@ function Index() {
       return;
     }
     setClientNotice(null);
-    if (!isDev && readUsage() >= DAILY_LIMIT) {
+    if (readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
