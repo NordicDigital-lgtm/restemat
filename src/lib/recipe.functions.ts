@@ -251,7 +251,12 @@ function extractJson(raw: string): Record<string, unknown> {
 
 function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
-  return value.replace(/\s+/g, " ").trim();
+  // Strip characters outside Latin scripts (e.g. CJK leakage from the model).
+  // Keep Basic Latin, Latin-1 Supplement, Latin Extended-A/B, general punctuation, currency.
+  return value
+    .replace(/[^\u0000-\u024F\u2000-\u206F\u20A0-\u20CF]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function toStringArray(value: unknown): string[] {
