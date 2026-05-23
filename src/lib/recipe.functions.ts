@@ -37,6 +37,7 @@ export const findRecipe = createServerFn({ method: "POST" })
 
     // Silently strip emoji from input before processing
     const sanitizedIngredients = stripEmoji(data.ingredients).trim();
+    const isSingleWord = sanitizedIngredients.length > 0 && !/[,;]/.test(sanitizedIngredients) && sanitizedIngredients.split(/\s+/).length === 1;
     if (!sanitizedIngredients) {
       return {
         name: "", description: "", haveIngredients: [], missingIngredients: [],
