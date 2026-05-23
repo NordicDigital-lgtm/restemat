@@ -19,10 +19,19 @@ function Index() {
     mutationFn: (value: string) => findRecipeFn({ data: { ingredients: value } }),
   });
 
+  const submit = (value: string) => {
+    const v = value.trim();
+    if (!v) return;
+    setIngredients(v);
+    mutation.mutate(v);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ingredients.trim()) return;
-    mutation.mutate(ingredients.trim());
+    submit(ingredients);
   };
 
   return (
