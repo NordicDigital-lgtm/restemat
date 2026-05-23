@@ -200,10 +200,23 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
     };
 
     if (parsed.error === "not_food") {
-      throw new Error(
-        (typeof parsed.message === "string" && parsed.message) ||
+      return {
+        name: "",
+        description: "",
+        haveIngredients: [],
+        missingIngredients: [],
+        fullIngredients: [],
+        steps: [],
+        lowIngredientNote: null,
+        unusedIngredients: [],
+        unusedReason: null,
+        unsafeIngredients: [],
+        unsafeReason: null,
+        filteredOut: [],
+        notFoodMessage:
+          (typeof parsed.message === "string" && cleanString(parsed.message)) ||
           "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet.",
-      );
+      };
     }
 
     const unusedIngredients = toStringArray(parsed.unused_ingredients);
@@ -222,6 +235,7 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
       unsafeIngredients,
       unsafeReason: unsafeIngredients.length > 0 ? cleanString(parsed.unsafe_reason) || null : null,
       filteredOut: toStringArray(parsed.filtered_out),
+      notFoodMessage: null,
     };
   });
 
