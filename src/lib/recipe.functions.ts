@@ -75,8 +75,13 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 6) MEIERIPRODUKTER SOM MATLAGINGSINGREDIENSER: Når melk, fløte, kremfløte, rømme, crème fraîche, yoghurt, smør, ost eller lignende nøytrale meieriprodukter dukker opp sammen med salte/savory ingredienser, behandle dem som BRUKBARE matlagingsingredienser (sauser, gratenger, supper, stuinger, paier, bakst osv.) — IKKE som drikker som skal parkeres i unused_ingredients. Bare legg meieriprodukter i unused_ingredients hvis de virkelig kolliderer med den valgte retten (f.eks. fløte i en lett asiatisk wok der det ikke hører hjemme).
 
-Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (basert KUN på trygge matvarer som er igjen etter filtrering og sikkerhet). Maksimalt 2–3 manglende ingredienser. Gi ALLTID en komplett ingrediensliste med mengder og en nummerert fremgangsmåte med korte, klare steg.`,
+7) FREMMEDE SKRIFTSPRÅK: Hvis brukeren skriver matvarer med ikke-latinske tegn (kyrillisk, arabisk, kinesisk, japansk, koreansk osv.), oversett dem til norsk og bruk de norske navnene i alle felter. Hvis et ord på et fremmed språk ikke er gjenkjennelig som mat, ignorer det stille — IKKE legg det i filtered_out.
+
+8) INGREDIENSNAVN: Skriv ingrediensnavn rent uten parenteser eller hakeparenteser rundt navnet. Ikke pakk navn inn i ( ) eller [ ] noe sted.`,
             },
+            {
+              role: "user",
+              content: `Jeg har dette hjemme: ${sanitizedIngredients}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`,
             {
               role: "user",
               content: `Jeg har dette hjemme: ${data.ingredients}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`,
