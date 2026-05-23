@@ -40,6 +40,12 @@ function writeUsage(count: number) {
   );
 }
 
+function isDevMode(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  return host === "localhost" || host.endsWith(".lovable.app");
+}
+
 function Index() {
   const [ingredients, setIngredients] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState("");
