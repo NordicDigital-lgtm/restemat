@@ -52,7 +52,7 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 3) ALDRI finn opp en hovedprotein eller karbohydrat brukeren ikke har. Hvis brukeren kun har krydder/tilbehør, må missing_ingredients inneholde hovedingrediensen.
 
-4) MANGE INGREDIENSER (15 eller flere reelle matvarer etter filtrering): Velg den BESTE kombinasjonen av ingredienser for én sammenhengende rett. Legg matvarer som ikke passer til denne retten i unused_ingredients. Disse skal være ekte matvarer brukeren oppga, ikke filtrerte elementer. Hvis brukeren har FÆRRE enn 15 matvarer, la unused_ingredients være en TOM liste og bruk alle matvarene normalt.
+4) UPASSENDE INGREDIENSER (uansett antall): Hvis brukeren har matvarer som ikke passer til den retten du har valgt (f.eks. asiatiske ingredienser i en italiensk rett, søte ingredienser i en salt rett, eller ingredienser fra en helt annen matkultur eller kategori), legg dem i unused_ingredients — selv om brukeren har færre enn 15 matvarer. Sett ALLTID unused_reason til en kort, vennlig norsk forklaring på hvorfor disse ikke passer (f.eks. "Disse passer bedre til en asiatisk rett — prøv dem en annen kveld." eller "Disse passer bedre i en dessert."). Hvis brukeren har 15+ matvarer, velg den BESTE kombinasjonen for én sammenhengende rett og legg resten i unused_ingredients med en passende unused_reason. Hvis ALLE matvarene passer fint i retten, la unused_ingredients være TOM og utelat unused_reason.
 
 Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (basert KUN på matvarene som er igjen etter filtrering). Maksimalt 2–3 manglende ingredienser. Gi ALLTID en komplett ingrediensliste med mengder og en nummerert fremgangsmåte med korte, klare steg.`,
             },
