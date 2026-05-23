@@ -5,7 +5,7 @@ import { useState } from "react";
 import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChefHat, Check, ShoppingBasket } from "lucide-react";
+import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
