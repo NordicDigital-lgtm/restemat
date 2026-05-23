@@ -21,7 +21,7 @@ function Oppgrader() {
         </div>
         <h1 className="text-3xl font-semibold sm:text-4xl">Få full tilgang</h1>
         <p className="mt-3 max-w-sm text-balance text-muted-foreground">
-          Få ubegrenset tilgang til Restemat. Én lav pris, null begrensninger.
+          Få ubegrenset tilgang til Restemat for 49 kr/mnd.
         </p>
       </header>
 
