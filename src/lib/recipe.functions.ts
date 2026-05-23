@@ -106,7 +106,7 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
                   unused_ingredients: {
                     type: "array",
                     items: { type: "string" },
-                    description: "Matvarer brukeren har, men som ikke passer denne retten. Bruk kun når brukeren har 6+ matvarer.",
+                    description: "Matvarer brukeren har, men som ikke passer denne retten. Bruk KUN når brukeren har 15 eller flere matvarer. Ellers tom liste.",
                   },
                   filtered_out: {
                     type: "array",
