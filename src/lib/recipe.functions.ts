@@ -92,7 +92,6 @@ export const findRecipe = createServerFn({ method: "POST" })
 REGEL-REKKEFØLGE (viktigst først):
 - PROTEIN: ALDRI foreslå protein hvis brukerens input allerede inneholder protein (kjøtt, fisk, fjørfe, egg, belgvekster/linser/bønner). Dette er den høyest prioriterte regelen.
 - KARBOHYDRAT: ALLTID foreslå karbohydrat når oppskriften ikke inneholder noe karbohydrat — inkludert curry, gryterett, og sausbaserte retter der ris, naan eller flatbrød ville vært naturlig. Ikke hopp over denne bare fordi retten har en saus.
-- KARBOHYDRAT TIL EGG: Når du foreslår karbohydrat til egg, foreslå ALLTID stekte eller ovnsbakte poteter — ALDRI kokte poteter.
 - SAUS: Foreslå saus bare hvis oppskriften ikke inneholder saus, dressing, sjy eller pannesaus fra før.
 
 FORMAT:
