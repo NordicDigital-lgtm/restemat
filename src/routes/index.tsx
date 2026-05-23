@@ -13,10 +13,11 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [ingredients, setIngredients] = useState("");
+  const [lastSubmitted, setLastSubmitted] = useState("");
   const findRecipeFn = useServerFn(findRecipe);
 
-  const mutation = useMutation<RecipeResult, Error, string>({
-    mutationFn: (value: string) => findRecipeFn({ data: { ingredients: value } }),
+  const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean }>({
+    mutationFn: ({ ingredients, regenerate }) => findRecipeFn({ data: { ingredients, regenerate } }),
   });
 
   const submit = (value: string) => {
