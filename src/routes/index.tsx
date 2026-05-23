@@ -95,19 +95,34 @@ function Index() {
             </div>
           )}
           <RecipeCard recipe={mutation.data} />
-          {mutation.data.unusedIngredients.length > 0 && (
-            <Button
-              type="button"
-              size="lg"
-              variant="secondary"
-              disabled={mutation.isPending}
-              onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
-              className="h-12 rounded-xl text-base font-semibold"
-            >
-              Lag noe med restene
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex flex-col gap-3">
+            {mutation.data.unusedIngredients.length > 0 && (
+              <Button
+                type="button"
+                size="lg"
+                variant="secondary"
+                disabled={mutation.isPending}
+                onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
+                className="h-12 rounded-xl text-base font-semibold"
+              >
+                Lag noe med restene
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+            {lastSubmitted && (
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                disabled={mutation.isPending}
+                onClick={() => submit(lastSubmitted, true)}
+                className="h-12 rounded-xl text-base font-semibold"
+              >
+                Regenerer oppskrift
+                <RefreshCw className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </>
       )}
     </main>
