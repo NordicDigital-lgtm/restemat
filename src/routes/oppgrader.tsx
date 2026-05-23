@@ -29,7 +29,7 @@ function Oppgrader() {
         <ul className="flex flex-col gap-3 text-sm text-foreground/90">
           <li>✓ Ubegrenset antall søk per dag</li>
           <li>✓ Lagre favorittoppskrifter</li>
-          <li>✓ Tilpassede forslag basert på smak</li>
+          <li>✓ Tilpasset ditt kjøleskap</li>
         </ul>
       </div>
 
