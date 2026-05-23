@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { findRecipe, type RecipeResult } from "@/lib/recipe.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,10 +11,54 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const DAILY_LIMIT = 3;
+const STORAGE_KEY = "restemat_daily_usage";
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function readUsage(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw) as { date: string; count: number };
+    if (parsed.date !== todayKey()) return 0;
+    return parsed.count || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeUsage(count: number) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ date: todayKey(), count }),
+  );
+}
+
 function Index() {
   const [ingredients, setIngredients] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState("");
+  const [usage, setUsage] = useState(0);
   const findRecipeFn = useServerFn(findRecipe);
+
+  useEffect(() => {
+    setUsage(readUsage());
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    const t = setTimeout(() => {
+      writeUsage(0);
+      setUsage(0);
+    }, midnight.getTime() - now.getTime());
+    return () => clearTimeout(t);
+  }, []);
+
+  const limitReached = usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean }>({
     mutationFn: ({ ingredients, regenerate }) => findRecipeFn({ data: { ingredients, regenerate } }),
@@ -23,9 +67,22 @@ function Index() {
   const submit = (value: string, regenerate?: boolean) => {
     const v = value.trim();
     if (!v) return;
+    if (readUsage() >= DAILY_LIMIT) {
+      setUsage(DAILY_LIMIT);
+      return;
+    }
     setIngredients(v);
     setLastSubmitted(v);
-    mutation.mutate({ ingredients: v, regenerate });
+    mutation.mutate(
+      { ingredients: v, regenerate },
+      {
+        onSuccess: () => {
+          const next = readUsage() + 1;
+          writeUsage(next);
+          setUsage(next);
+        },
+      },
+    );
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
