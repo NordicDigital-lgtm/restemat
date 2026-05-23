@@ -172,7 +172,7 @@ function Index() {
                 type="button"
                 size="lg"
                 variant="secondary"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || limitReached}
                 onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
                 className="h-12 rounded-xl text-base font-semibold"
               >
