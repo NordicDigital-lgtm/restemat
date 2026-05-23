@@ -157,6 +157,11 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
                 </li>
               ))}
             </ul>
+            {recipe.unusedReason && (
+              <p className="mt-3 text-sm italic text-muted-foreground">
+                {recipe.unusedReason}
+              </p>
+            )}
           </section>
         )}
 

@@ -20,6 +20,7 @@ export type RecipeResult = {
   steps: string[];
   lowIngredientNote: string | null;
   unusedIngredients: string[];
+  unusedReason: string | null;
   filteredOut: string[];
 };
 
@@ -51,7 +52,7 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 3) ALDRI finn opp en hovedprotein eller karbohydrat brukeren ikke har. Hvis brukeren kun har krydder/tilbehør, må missing_ingredients inneholde hovedingrediensen.
 
-4) MANGE INGREDIENSER (15 eller flere reelle matvarer etter filtrering): Velg den BESTE kombinasjonen av ingredienser for én sammenhengende rett. Legg matvarer som ikke passer til denne retten i unused_ingredients. Disse skal være ekte matvarer brukeren oppga, ikke filtrerte elementer. Hvis brukeren har FÆRRE enn 15 matvarer, la unused_ingredients være en TOM liste og bruk alle matvarene normalt.
+4) UPASSENDE INGREDIENSER (uansett antall): Hvis brukeren har matvarer som ikke passer til den retten du har valgt (f.eks. asiatiske ingredienser i en italiensk rett, søte ingredienser i en salt rett, eller ingredienser fra en helt annen matkultur eller kategori), legg dem i unused_ingredients — selv om brukeren har færre enn 15 matvarer. Sett ALLTID unused_reason til en kort, vennlig norsk forklaring på hvorfor disse ikke passer (f.eks. "Disse passer bedre til en asiatisk rett — prøv dem en annen kveld." eller "Disse passer bedre i en dessert."). Hvis brukeren har 15+ matvarer, velg den BESTE kombinasjonen for én sammenhengende rett og legg resten i unused_ingredients med en passende unused_reason. Hvis ALLE matvarene passer fint i retten, la unused_ingredients være TOM og utelat unused_reason.
 
 Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (basert KUN på matvarene som er igjen etter filtrering). Maksimalt 2–3 manglende ingredienser. Gi ALLTID en komplett ingrediensliste med mengder og en nummerert fremgangsmåte med korte, klare steg.`,
             },
@@ -106,7 +107,11 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
                   unused_ingredients: {
                     type: "array",
                     items: { type: "string" },
-                    description: "Matvarer brukeren har, men som ikke passer denne retten. Bruk KUN når brukeren har 15 eller flere matvarer. Ellers tom liste.",
+                    description: "Matvarer brukeren har, men som ikke passer til den valgte retten (f.eks. fra annen matkultur eller kategori). Bruk uansett antall ingredienser. Tom liste hvis alt passer.",
+                  },
+                  unused_reason: {
+                    type: "string",
+                    description: "Kort, vennlig norsk forklaring på hvorfor unused_ingredients ikke passer, f.eks. 'Disse passer bedre til en asiatisk rett — prøv dem en annen kveld.' Utelat hvis unused_ingredients er tom.",
                   },
                   filtered_out: {
                     type: "array",
@@ -167,6 +172,7 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
       full_ingredients?: unknown;
       steps?: unknown;
       unused_ingredients?: unknown;
+      unused_reason?: unknown;
       filtered_out?: unknown;
       low_ingredient_note?: unknown;
       error?: string;
@@ -180,6 +186,8 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
       );
     }
 
+    const unusedIngredients = toStringArray(parsed.unused_ingredients);
+
     return {
       name: cleanString(parsed.title) || "Middagsforslag",
       description: cleanString(parsed.description) || "",
@@ -188,7 +196,8 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har (ba
       fullIngredients: toFullIngredients(parsed.full_ingredients),
       steps: toStringArray(parsed.steps),
       lowIngredientNote: cleanString(parsed.low_ingredient_note) || null,
-      unusedIngredients: toStringArray(parsed.unused_ingredients),
+      unusedIngredients,
+      unusedReason: unusedIngredients.length > 0 ? cleanString(parsed.unused_reason) || null : null,
       filteredOut: toStringArray(parsed.filtered_out),
     };
   });
