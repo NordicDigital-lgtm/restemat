@@ -116,11 +116,11 @@ function Index() {
           className="min-h-32 resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
           disabled={mutation.isPending}
         />
-      <Button
+        <Button
           type="submit"
           size="lg"
           disabled={mutation.isPending || !ingredients.trim() || limitReached}
-          className="h-12 rounded-xl text-base font-semibold"
+          className="h-12 rounded-full text-base font-semibold"
         >
           {mutation.isPending ? (
             <>
@@ -134,10 +134,13 @@ function Index() {
       </form>
 
       {limitReached && (
-        <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm text-foreground">
-          Du har brukt dagens 3 gratis søk 🍽️ Vil du ha ubegrenset tilgang?{" "}
-          <Link to="/oppgrader" className="font-semibold text-primary underline underline-offset-2">
-            Få full tilgang
+        <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
+          <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
+          <p className="mt-1 text-sm text-[#A08060]">Få ubegrenset tilgang og aldri gå tom for middagsideer</p>
+          <Link to="/oppgrader">
+            <Button className="mt-4 h-11 rounded-full bg-[#C4785A] px-6 text-sm font-semibold text-white hover:bg-[#B06A4E]">
+              Oppgrader nå →
+            </Button>
           </Link>
         </div>
       )}
@@ -171,10 +174,9 @@ function Index() {
               <Button
                 type="button"
                 size="lg"
-                variant="secondary"
                 disabled={mutation.isPending || limitReached}
                 onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
-                className="h-12 rounded-xl text-base font-semibold"
+                className="h-12 rounded-full bg-[#7A9E7E] text-base font-semibold text-white hover:bg-[#6A8E6E]"
               >
                 Lag noe med restene
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -184,12 +186,11 @@ function Index() {
               <Button
                 type="button"
                 size="lg"
-                variant="outline"
                 disabled={mutation.isPending || limitReached}
                 onClick={() => submit(lastSubmitted, true)}
-                className="h-12 rounded-xl text-base font-semibold"
+                className="h-12 rounded-full bg-[#C4785A] text-base font-semibold text-white hover:bg-[#B06A4E]"
               >
-                Regenerer oppskrift
+                Finn ny rett
                 <RefreshCw className="ml-2 h-4 w-4" />
               </Button>
             )}
