@@ -21,17 +21,21 @@ function Oppgrader() {
         </div>
         <h1 className="text-3xl font-semibold sm:text-4xl">Få full tilgang</h1>
         <p className="mt-3 max-w-sm text-balance text-muted-foreground">
-          Ubegrenset tilgang til Restemat – kommer snart. La oss vite at du er interessert!
+          Få ubegrenset tilgang til Restemat. Én lav pris, null begrensninger.
         </p>
       </header>
 
       <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-sm">
         <ul className="flex flex-col gap-3 text-sm text-foreground/90">
           <li>✓ Ubegrenset antall søk per dag</li>
-          <li>✓ Lagre favorittoppskrifter</li>
-          <li>✓ Tilpasset ditt kjøleskap</li>
         </ul>
       </div>
+
+      <a href="https://buy.stripe.com/test_6oU7sLaE1ae59qx8Z35J600" target="_blank" rel="noopener noreferrer">
+        <Button size="lg" className="h-12 w-full rounded-xl text-base font-semibold">
+          Oppgrader nå →
+        </Button>
+      </a>
 
       <Link to="/">
         <Button variant="outline" size="lg" className="h-12 w-full rounded-xl text-base font-semibold">
