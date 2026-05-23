@@ -165,7 +165,7 @@ function Index() {
         </Button>
       </form>
 
-      {limitReached && (
+      {mounted && limitReached && (
         <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
           <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
           <p className="mt-1 text-sm text-[#A08060]">Lag mat av restene hver dag, uten begrensninger</p>
@@ -177,14 +177,13 @@ function Index() {
         </div>
       )}
 
-      {!isDev && (
+      {mounted && !isDev && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
       )}
 
       {mutation.isError && (
-
         <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
           {mutation.error.message || "Noe gikk galt. Prøv igjen."}
         </div>
@@ -210,7 +209,7 @@ function Index() {
                 size="lg"
                 disabled={mutation.isPending || limitReached}
                 onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
-                className="h-12 rounded-full bg-[#7A9E7E] text-base font-semibold text-white hover:bg-[#6A8E6E]"
+                className="h-12 rounded-full bg-[#7A9E7E] text-base font-bold text-white hover:bg-[#6A8E6E]"
               >
                 Lag noe med restene
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -222,14 +221,28 @@ function Index() {
                 size="lg"
                 disabled={mutation.isPending || limitReached}
                 onClick={() => submit(lastSubmitted, true)}
-                className="h-12 rounded-full bg-[#C4785A] text-base font-semibold text-white hover:bg-[#B06A4E]"
+                className="h-12 rounded-full bg-[#C4785A] text-base font-bold text-white hover:bg-[#B06A4E]"
               >
-                Finn ny rett
+                Finn en ny rett
                 <RefreshCw className="ml-2 h-4 w-4" />
               </Button>
             )}
           </div>
         </>
+      )}
+
+      {mounted && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={enableTestPaywall}
+            className="text-xs text-muted-foreground/60 underline-offset-2 hover:underline"
+          >
+            {window.sessionStorage.getItem("testPaywall") === "true"
+              ? "Betalingsmur testes (klikk for å nullstille)"
+              : "Test betalingsmur"}
+          </button>
+        </div>
       )}
     </main>
   );
