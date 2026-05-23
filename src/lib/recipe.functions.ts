@@ -4,6 +4,7 @@ import { z } from "zod";
 const InputSchema = z.object({
   ingredients: z.string().min(1).max(2000),
   regenerate: z.boolean().optional(),
+  excludeTitles: z.array(z.string().max(200)).max(50).optional(),
 });
 
 export type FullIngredient = {
