@@ -145,7 +145,13 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Ma
       missing_ingredients?: string[];
       full_ingredients?: FullIngredient[];
       steps?: string[];
+      low_ingredient_note?: string;
+      error?: string;
+      message?: string;
     };
+    if (parsed.error === "not_food") {
+      throw new Error(parsed.message || "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet.");
+    }
     return {
       name: parsed.title,
       description: parsed.description,
@@ -153,5 +159,6 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Ma
       missingIngredients: (parsed.missing_ingredients ?? []).slice(0, 3),
       fullIngredients: parsed.full_ingredients ?? [],
       steps: parsed.steps ?? [],
+      lowIngredientNote: parsed.low_ingredient_note ?? null,
     };
   });
