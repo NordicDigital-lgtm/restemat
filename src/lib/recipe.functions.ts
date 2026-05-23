@@ -153,6 +153,7 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Ma
       missing_ingredients?: string[];
       full_ingredients?: FullIngredient[];
       steps?: string[];
+      unused_ingredients?: string[];
       low_ingredient_note?: string;
       error?: string;
       message?: string;
@@ -168,5 +169,6 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Ma
       fullIngredients: parsed.full_ingredients ?? [],
       steps: parsed.steps ?? [],
       lowIngredientNote: parsed.low_ingredient_note ?? null,
+      unusedIngredients: parsed.unused_ingredients ?? [],
     };
   });
