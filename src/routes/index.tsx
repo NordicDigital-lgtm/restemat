@@ -20,11 +20,12 @@ function Index() {
     mutationFn: ({ ingredients, regenerate }) => findRecipeFn({ data: { ingredients, regenerate } }),
   });
 
-  const submit = (value: string) => {
+  const submit = (value: string, regenerate?: boolean) => {
     const v = value.trim();
     if (!v) return;
     setIngredients(v);
-    mutation.mutate(v);
+    setLastSubmitted(v);
+    mutation.mutate({ ingredients: v, regenerate });
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
