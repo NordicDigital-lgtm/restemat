@@ -103,6 +103,7 @@ FORMAT:
 - ALDRI inkluder et kulepunkt som forklarer hvorfor noe IKKE foreslås (f.eks. "Retten inneholder allerede en kremet saus"). Enten foreslå noe, eller unnlat det helt.
 - Gjenta ALDRI noe som allerede er nevnt i oppskriftens ingredienser eller fremgangsmåte
 - ALDRI foreslå en ingrediens i "Kan passe fint med:" som brukeren allerede har oppgitt som input. Hvis brukeren har poteter, ris, pasta, brød eller annen karbohydrat — bruk det i retten i stedet for å foreslå det her.
+- POTETTILBEREDNING: Når du foreslår poteter som tilbehør, velg alltid den tilberedningsmåten som passer best til retten. Kokte poteter skal kun foreslås ved retter som naturlig passer med dem, som pochert eller dampet fisk, gryteretter, eller tradisjonelle norske middager. For pannestekte retter som omelett eller rørte egg, foreslå stekte eller ovnsbakte poteter i stedet — eller hopp over poteter helt hvis et annet tilbehør er mer naturlig.
 
 Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestion, carb_suggestion og sauce_suggestion til null/tom.`,
 
