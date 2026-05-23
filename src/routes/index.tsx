@@ -185,7 +185,7 @@ function Index() {
                 type="button"
                 size="lg"
                 variant="outline"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || limitReached}
                 onClick={() => submit(lastSubmitted, true)}
                 className="h-12 rounded-xl text-base font-semibold"
               >
