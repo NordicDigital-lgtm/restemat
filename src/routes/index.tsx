@@ -42,8 +42,7 @@ function writeUsage(count: number) {
 
 function isDevMode(): boolean {
   if (typeof window === "undefined") return false;
-  const host = window.location.hostname;
-  return host === "localhost" || host.endsWith(".lovable.app");
+  return window.localStorage.getItem("devMode") === "true";
 }
 
 function Index() {
@@ -55,7 +54,9 @@ function Index() {
   const isDev = isDevMode();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.search.includes("reset=true")) {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("devMode", "true");
+    if (window.location.search.includes("reset=true")) {
       window.localStorage.removeItem(STORAGE_KEY);
       window.location.replace(window.location.pathname);
     }
