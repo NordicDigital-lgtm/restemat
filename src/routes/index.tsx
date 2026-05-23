@@ -88,6 +88,19 @@ function Index() {
             </div>
           )}
           <RecipeCard recipe={mutation.data} />
+          {mutation.data.unusedIngredients.length > 0 && (
+            <Button
+              type="button"
+              size="lg"
+              variant="secondary"
+              disabled={mutation.isPending}
+              onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
+              className="h-12 rounded-xl text-base font-semibold"
+            >
+              Lag noe med restene
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </>
       )}
     </main>
