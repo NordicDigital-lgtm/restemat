@@ -85,7 +85,13 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 9) NORSK BOKMÅL: Alle oppskriftstitler, beskrivelser og fremgangsmåter skal skrives på korrekt norsk bokmål. Vær spesielt nøye med adjektivbøyning (kremet/kremete, stekt/stekte), bestemte og ubestemte artikkelformer, og verbbøyning. Bruk naturlig norsk språk slik en morsmålsbruker ville skrevet det i en oppskriftskontekst.
 
-8) ENKELTORD-STRENG SJEKK: Hvis brukerens input består av kun ETT enkelt ord (ingen kommaer, ingen liste), må du være EKSTRA streng. Bare fortsett hvis ordet utvilsomt er en gjenkjennelig norsk matingrediens (f.eks. "egg", "pasta", "laks", "ris", "kylling", "potet", "ost", "melk", "brød", "tomat"). Hvis enkeltordet er et personnavn, et tilfeldig substantiv, et engelsk ord som ikke er et matbegrep, eller noe annet som ikke åpenbart er en matvare på norsk, returner error="not_food" og message="Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet." Denne strenge sjekken gjelder KUN enkeltord-input — flerords-/kommaseparert input følger vanlig filtreringslogikk.`,
+8) ENKELTORD-STRENG SJEKK: Hvis brukerens input består av kun ETT enkelt ord (ingen kommaer, ingen liste), må du være EKSTRA streng. Bare fortsett hvis ordet utvilsomt er en gjenkjennelig norsk matingrediens (f.eks. "egg", "pasta", "laks", "ris", "kylling", "potet", "ost", "melk", "brød", "tomat"). Hvis enkeltordet er et personnavn, et tilfeldig substantiv, et engelsk ord som ikke er et matbegrep, eller noe annet som ikke åpenbart er en matvare på norsk, returner error="not_food" og message="Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet." Denne strenge sjekken gjelder KUN enkeltord-input — flerords-/kommaseparert input følger vanlig filtreringslogikk.
+
+10) FULLSTENDIG MÅLTID: En komplett middagsforslag skal alltid vurdere tre komponenter: protein (kjøtt, fisk, fjørfe, belgfrukter, egg etc.), karbohydrat (ris, pasta, poteter, brød etc.), og saus eller pannesaus.
+- SAUS: Alltid inkluder en sausanbefaling. Hvis brukeren har nok ingredienser til en enkel pannesaus (smør, fløte, fond, vin, hvitløk, løk, mel etc.), foreslå å lage en fra det de har. Hvis de ikke har nok til en pannesaus, anbefal en enkel saus som passer til retten (f.eks. "Dette passer godt med en enkel dijonsaus — du trenger bare sennep, fløte og smør").
+- KARBOHYDRAT: Hvis ingen karbohydrat er blant brukerens ingredienser, anbefal et enkelt karbohydrat som passer til retten. Hold det kort, én setning.
+- PROTEIN: Hvis ingen protein er blant brukerens ingredienser, anbefal et passende protein som ville fullføre retten. Hold det kort, én setning.
+Disse anbefalingene skal vises i en kort seksjon etter hovedoppskriften, med tittelen "Forslag til å fullføre måltidet" — bare inkluder komponentene som faktisk mangler. Hvis alle tre allerede er dekket, utelat denne seksjonen helt.`,
             },
             {
               role: "user",
@@ -161,6 +167,18 @@ export const findRecipe = createServerFn({ method: "POST" })
                   low_ingredient_note: {
                     type: "string",
                     description: "Vennlig melding når brukeren har svært få ingredienser (1–2). Kun inkluder hvis relevant.",
+                  },
+                  protein_suggestion: {
+                    type: "string",
+                    description: "Kort forslag til protein hvis brukeren mangler protein i ingrediensene. Utelat hvis brukeren allerede har protein.",
+                  },
+                  carb_suggestion: {
+                    type: "string",
+                    description: "Kort forslag til karbohydrat hvis brukeren mangler karbohydrat i ingrediensene. Utelat hvis brukeren allerede har karbohydrat.",
+                  },
+                  sauce_suggestion: {
+                    type: "string",
+                    description: "Kort sausforslag. Alltid inkluder en sausanbefaling — enten en pannesaus fra brukerens ingredienser, eller en enkel saus som passer til retten.",
                   },
                   error: {
                     type: "string",
