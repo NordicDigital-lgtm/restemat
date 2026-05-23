@@ -49,6 +49,7 @@ function isDevMode(): boolean {
 function Index() {
   const [ingredients, setIngredients] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState("");
+  const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isDev, setIsDev] = useState(false);
@@ -86,8 +87,8 @@ function Index() {
 
   const limitReached = !isDev && usage >= DAILY_LIMIT;
 
-  const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean }>({
-    mutationFn: ({ ingredients, regenerate }) => findRecipeFn({ data: { ingredients, regenerate } }),
+  const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
+    mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
   });
 
   const [clientNotice, setClientNotice] = useState<string | null>(null);
@@ -115,11 +116,19 @@ function Index() {
       return;
     }
     setIngredients(cleaned);
+    // Reset suggestion history when starting a fresh search (not a regenerate)
+    const historyForCall = regenerate ? suggestedTitles : [];
+    if (!regenerate) {
+      setSuggestedTitles([]);
+    }
     setLastSubmitted(cleaned);
     mutation.mutate(
-      { ingredients: cleaned, regenerate },
+      { ingredients: cleaned, regenerate, excludeTitles: historyForCall },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          if (data?.name) {
+            setSuggestedTitles((prev) => (prev.includes(data.name) ? prev : [...prev, data.name]));
+          }
           if (isDev) return;
           const next = readUsage() + 1;
           writeUsage(next);
@@ -146,7 +155,7 @@ function Index() {
         </div>
         <h1 className="text-4xl font-semibold sm:text-5xl">Restemat</h1>
         <p className="mt-3 max-w-sm text-balance text-muted-foreground">
-          Fra rester til middag på ett forslag.
+          Fra rester til middag, helt enkelt.
         </p>
       </header>
 
