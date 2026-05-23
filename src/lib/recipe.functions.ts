@@ -100,6 +100,11 @@ Foreslå én konkret middag de kan lage i kveld med mest mulig av det de har. Ma
                     items: { type: "string" },
                     description: "Fremgangsmåte som korte, klare steg på norsk",
                   },
+                  unused_ingredients: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Matvarer brukeren har, men som ikke passer denne retten. Bruk kun når brukeren har 6+ matvarer.",
+                  },
                   low_ingredient_note: {
                     type: "string",
                     description: "Vennlig melding når brukeren har svært få ingredienser (1–2). Kun inkluder hvis relevant.",
