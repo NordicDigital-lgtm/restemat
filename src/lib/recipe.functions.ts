@@ -100,7 +100,8 @@ FORMAT:
 - Enkle kulepunkter, ingen fet skrift som "Protein:" eller "Saus:"
 - Hvert kulepunkt er ett kort forslag, f.eks. "Kokt ris eller ovnsbakte poteter" eller "En enkel pannesaus laget av stekesjyen"
 - Maksimum 3 kulepunkter
-- ALDRI inkluder et kulepunkt som forklarer hvorfor noe IKKE foreslås (f.eks. "Retten inneholder allerede en kremet saus"). Enten foreslå noe, eller unnlat det helt.
+- ALDRI inkluder et kulepunkt som forklarer hvorfor noe IKKE foreslås — spesielt aldri en setning som "Retten lager sin egen saus" eller "Retten inneholder allerede en kremet saus". Hvis en saus allerede er dekket av oppskriften, skal det bare utebli — ingen forklaring, ingen unnskyldning, ingen opplysning om det.
+- Enten foreslå noe, eller unnlat det helt.
 - Gjenta ALDRI noe som allerede er nevnt i oppskriftens ingredienser eller fremgangsmåte
 - ALDRI foreslå en ingrediens i "Kan passe fint med:" som brukeren allerede har oppgitt som input. Hvis brukeren har poteter, ris, pasta, brød eller annen karbohydrat — bruk det i retten i stedet for å foreslå det her.
 - POTETTILBEREDNING: Når du foreslår poteter som tilbehør, velg alltid den tilberedningsmåten som passer best til retten. Kokte poteter skal kun foreslås ved retter som naturlig passer med dem, som pochert eller dampet fisk, gryteretter, eller tradisjonelle norske middager. For pannestekte retter som omelett eller rørte egg, foreslå stekte eller ovnsbakte poteter i stedet — eller hopp over poteter helt hvis et annet tilbehør er mer naturlig.
