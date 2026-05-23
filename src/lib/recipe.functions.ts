@@ -87,11 +87,21 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 8) ENKELTORD-STRENG SJEKK: Hvis brukerens input består av kun ETT enkelt ord (ingen kommaer, ingen liste), må du være EKSTRA streng. Bare fortsett hvis ordet utvilsomt er en gjenkjennelig norsk matingrediens (f.eks. "egg", "pasta", "laks", "ris", "kylling", "potet", "ost", "melk", "brød", "tomat"). Hvis enkeltordet er et personnavn, et tilfeldig substantiv, et engelsk ord som ikke er et matbegrep, eller noe annet som ikke åpenbart er en matvare på norsk, returner error="not_food" og message="Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet." Denne strenge sjekken gjelder KUN enkeltord-input — flerords-/kommaseparert input følger vanlig filtreringslogikk.
 
-10) FULLSTENDIG MÅLTID: En komplett middagsforslag skal alltid vurdere tre komponenter: protein (kjøtt, fisk, fjørfe, belgfrukter, egg etc.), karbohydrat (ris, pasta, poteter, brød etc.), og saus eller pannesaus.
-- SAUS: Alltid inkluder en sausanbefaling. Hvis brukeren har nok ingredienser til en enkel pannesaus (smør, fløte, fond, vin, hvitløk, løk, mel etc.), foreslå å lage en fra det de har. Hvis de ikke har nok til en pannesaus, anbefal en enkel saus som passer til retten (f.eks. "Dette passer godt med en enkel dijonsaus — du trenger bare sennep, fløte og smør").
-- KARBOHYDRAT: Hvis ingen karbohydrat er blant brukerens ingredienser, anbefal et enkelt karbohydrat som passer til retten. Hold det kort, én setning.
-- PROTEIN: Hvis ingen protein er blant brukerens ingredienser, anbefal et passende protein som ville fullføre retten. Hold det kort, én setning.
-Disse anbefalingene skal vises i en kort seksjon etter hovedoppskriften, med tittelen "Forslag til å fullføre måltidet" — bare inkluder komponentene som faktisk mangler. Hvis alle tre allerede er dekket, utelat denne seksjonen helt.`,
+10) FORSLAG TIL Å FULLFØRE MÅLTIDET: Bare inkluder en "Forslag til å fullføre måltidet"-seksjon når det faktisk tilfører verdi. Følg disse retningslinjene strengt:
+
+NÅR SEKSJONEN SKAL VISES:
+- Vis den KUN når brukerens input er ett enkelt protein (kjøtt, fisk, fjørfe) med få eller ingen tilbehørsingredienser.
+- Vis den ALDRI når oppskriften allerede inneholder en saus, sjy eller dressing som del av retten.
+- Vis den ALDRI når brukeren har gitt en blanding av ingredienser som allerede dekker protein + karbohydrat + saus/smakselementer.
+- Vis den ALDRI for eggebaserte retter, bakverk, eller oppskrifter der konseptet i seg selv er komplett (omelett, frittata, curry, gryterett, pastarett etc.).
+
+HVA SOM SKAL INKLUDERES (kun det som faktisk mangler):
+- KARBOHYDRAT (carb_suggestion): Foreslå kun hvis ingen karbohydrat finnes i oppskriftens ingredienser eller fremgangsmåte. Én kort setning, f.eks. "Server gjerne med kokt ris eller ovnsbakte poteter."
+- SAUS (sauce_suggestion): Foreslå kun hvis ingen saus, dressing, sjy eller pannesaus er nevnt noe sted i oppskriften. Hvis brukeren har ingredienser til en enkel pannesaus (smør, fløte, fond), foreslå å lage en. Ellers foreslå et enkelt komplement. Én kort setning.
+- PROTEIN (protein_suggestion): Foreslå ALDRI protein hvis brukerens hovedinput allerede er et protein.
+
+Hvis alle tre komponentene er dekket av oppskriften, utelat seksjonen helt — sett protein_suggestion, carb_suggestion og sauce_suggestion til null/tom.`,
+
             },
             {
               role: "user",
