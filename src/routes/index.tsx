@@ -156,7 +156,7 @@ function Index() {
         </div>
         <h1 className="text-4xl font-semibold sm:text-5xl">Restemat</h1>
         <p className="mt-3 max-w-sm text-balance text-muted-foreground">
-          Skriv inn det du har hjemme – så finner vi én middag du kan lage i kveld.
+          Fra rester til middag på ett forslag.
         </p>
       </header>
 
@@ -268,19 +268,6 @@ function Index() {
         </>
       )}
 
-      {mounted && (
-        <div className="mt-4 flex justify-center">
-          <button
-            type="button"
-            onClick={enableTestPaywall}
-            className="text-xs text-muted-foreground/60 underline-offset-2 hover:underline"
-          >
-            {window.sessionStorage.getItem("testPaywall") === "true"
-              ? "Betalingsmur testes (klikk for å nullstille)"
-              : "Test betalingsmur"}
-          </button>
-        </div>
-      )}
     </main>
   );
 }

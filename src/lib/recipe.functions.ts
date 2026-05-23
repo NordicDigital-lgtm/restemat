@@ -76,7 +76,9 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 6) MEIERIPRODUKTER SOM MATLAGINGSINGREDIENSER: Når melk, fløte, kremfløte, rømme, crème fraîche, yoghurt, smør, ost eller lignende nøytrale meieriprodukter dukker opp sammen med salte/savory ingredienser, behandle dem som BRUKBARE matlagingsingredienser (sauser, gratenger, supper, stuinger, paier, bakst osv.) — IKKE som drikker som skal parkeres i unused_ingredients. Bare legg meieriprodukter i unused_ingredients hvis de virkelig kolliderer med den valgte retten (f.eks. fløte i en lett asiatisk wok der det ikke hører hjemme).
 
-7) INGREDIENSNAVN: Skriv ingrediensnavn rent uten parenteser eller hakeparenteser rundt navnet. Ikke pakk navn inn i ( ) eller [ ] noe sted.
+7) INGREDIENSNAVN: Skriv ingrediensnavn rent uten parenteser eller hakeparenteser rundt navnet, og uten forklaringer i parentes. Ikke pakk navn inn i ( ) eller [ ] noe sted, og ikke legg til tolkninger som "(antagelig X)" eller lignende — bare skriv det rene ingrediensnavnet du har valgt.
+
+9) NORSK BOKMÅL: Alle oppskriftstitler, beskrivelser og fremgangsmåter skal skrives på korrekt norsk bokmål. Vær spesielt nøye med adjektivbøyning (kremet/kremete, stekt/stekte), bestemte og ubestemte artikkelformer, og verbbøyning. Bruk naturlig norsk språk slik en morsmålsbruker ville skrevet det i en oppskriftskontekst.
 
 8) ENKELTORD-STRENG SJEKK: Hvis brukerens input består av kun ETT enkelt ord (ingen kommaer, ingen liste), må du være EKSTRA streng. Bare fortsett hvis ordet utvilsomt er en gjenkjennelig norsk matingrediens (f.eks. "egg", "pasta", "laks", "ris", "kylling", "potet", "ost", "melk", "brød", "tomat"). Hvis enkeltordet er et personnavn, et tilfeldig substantiv, et engelsk ord som ikke er et matbegrep, eller noe annet som ikke åpenbart er en matvare på norsk, returner error="not_food" og message="Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet." Denne strenge sjekken gjelder KUN enkeltord-input — flerords-/kommaseparert input følger vanlig filtreringslogikk.`,
             },
@@ -301,10 +303,13 @@ function cleanString(value: unknown): string {
 }
 
 function stripWrappingBrackets(value: string): string {
-  // Remove parentheses/brackets around or inside ingredient names
+  // Remove parenthetical/bracketed content entirely (e.g. "salt (havsalt)" -> "salt"),
+  // then strip any remaining stray brackets and trim leading/trailing punctuation.
   return value
+    .replace(/\s*[([{][^)\]}]*[)\]}]\s*/g, " ")
     .replace(/[()[\]{}]/g, " ")
     .replace(/\s+/g, " ")
+    .replace(/^[\s,;.:!?\-–—]+|[\s,;.:!?\-–—]+$/g, "")
     .trim();
 }
 
