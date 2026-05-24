@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const LIMIT_DISABLED = true; // Set to true to disable daily search limit
+const LIMIT_DISABLED = false; // Set to true to disable daily search limit
 const DAILY_LIMIT = 3;
 const STORAGE_KEY = "restemat_daily_usage";
 
@@ -112,11 +112,10 @@ function Index() {
       return;
     }
     setClientNotice(null);
-    // DISABLED: daily search limit check
-    // if (!isDev && readUsage() >= DAILY_LIMIT) {
-    //   setUsage(DAILY_LIMIT);
-    //   return;
-    // }
+    if (!isDev && readUsage() >= DAILY_LIMIT) {
+      setUsage(DAILY_LIMIT);
+      return;
+    }
     setIngredients(cleaned);
     // Reset suggestion history when starting a fresh search (not a regenerate)
     const historyForCall = regenerate ? suggestedTitles : [];
@@ -187,7 +186,6 @@ function Index() {
           )}
         </Button>
       </form>
-      {/* DISABLED: upgrade card
       {mounted && limitReached && (
         <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
           <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
@@ -198,14 +196,13 @@ function Index() {
             </Button>
           </Link>
         </div>
-      )} */}
+      )}
 
-      {/* DISABLED: usage counter
       {mounted && !isDev && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
-      )} */}
+      )}
 
       {clientNotice && (
         <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
