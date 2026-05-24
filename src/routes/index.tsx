@@ -186,8 +186,6 @@ function Index() {
           )}
         </Button>
       </form>
-
-      {/* Upgrade card disabled
       {mounted && limitReached && (
         <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
           <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
@@ -199,15 +197,12 @@ function Index() {
           </Link>
         </div>
       )}
-      */}
 
-      {/* Usage counter disabled
       {mounted && !isDev && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
       )}
-      */}
 
       {clientNotice && (
         <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
