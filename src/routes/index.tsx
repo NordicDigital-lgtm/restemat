@@ -12,6 +12,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const LIMIT_DISABLED = true; // Set to false to re-enable daily search limit
 const DAILY_LIMIT = 3;
 const STORAGE_KEY = "restemat_daily_usage";
 
@@ -85,7 +86,7 @@ function Index() {
     return () => clearTimeout(t);
   }, [mounted]);
 
-  const limitReached = !isDev && usage >= DAILY_LIMIT;
+  const limitReached = LIMIT_DISABLED ? false : !isDev && usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
     mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
@@ -111,10 +112,12 @@ function Index() {
       return;
     }
     setClientNotice(null);
+    /* Daily limit check disabled
     if (!isDev && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
+    */
     setIngredients(cleaned);
     // Reset suggestion history when starting a fresh search (not a regenerate)
     const historyForCall = regenerate ? suggestedTitles : [];
@@ -186,6 +189,7 @@ function Index() {
         </Button>
       </form>
 
+      {/* Upgrade card disabled
       {mounted && limitReached && (
         <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
           <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
@@ -197,12 +201,15 @@ function Index() {
           </Link>
         </div>
       )}
+      */}
 
+      {/* Usage counter disabled
       {mounted && !isDev && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
       )}
+      */}
 
       {clientNotice && (
         <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
