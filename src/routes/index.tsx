@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const LIMIT_DISABLED = true; // Set to false to re-enable daily search limit
+const LIMIT_DISABLED = false; // Set to true to disable daily search limit
 const DAILY_LIMIT = 3;
 const STORAGE_KEY = "restemat_daily_usage";
 
@@ -112,12 +112,10 @@ function Index() {
       return;
     }
     setClientNotice(null);
-    /* Daily limit check disabled
     if (!isDev && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
-    */
     setIngredients(cleaned);
     // Reset suggestion history when starting a fresh search (not a regenerate)
     const historyForCall = regenerate ? suggestedTitles : [];
@@ -188,8 +186,6 @@ function Index() {
           )}
         </Button>
       </form>
-
-      {/* Upgrade card disabled
       {mounted && limitReached && (
         <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
           <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
@@ -201,15 +197,12 @@ function Index() {
           </Link>
         </div>
       )}
-      */}
 
-      {/* Usage counter disabled
       {mounted && !isDev && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
       )}
-      */}
 
       {clientNotice && (
         <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
@@ -243,20 +236,18 @@ function Index() {
           )}
           <RecipeCard recipe={mutation.data} />
           <div className="flex flex-col gap-3">
-            <Button
-              type="button"
-              size="lg"
-              disabled={mutation.isPending || limitReached}
-              onClick={() => submit(
-                (mutation.data!.unusedIngredients.length > 0
-                  ? mutation.data!.unusedIngredients.join(", ")
-                  : lastSubmitted) || ""
-              )}
-              className="h-12 rounded-full bg-[#7A9E7E] text-base font-bold text-white hover:bg-[#6A8E6E]"
-            >
-              Lag noe med restene
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            {mutation.data.unusedIngredients.length > 0 && (
+              <Button
+                type="button"
+                size="lg"
+                disabled={mutation.isPending || limitReached}
+                onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
+                className="h-12 rounded-full bg-[#7A9E7E] text-base font-bold text-white hover:bg-[#6A8E6E]"
+              >
+                Lag noe med restene
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
             {lastSubmitted && (
               <Button
                 type="button"
