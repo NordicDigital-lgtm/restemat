@@ -64,7 +64,11 @@ function Index() {
       window.location.replace(window.location.pathname);
       return;
     }
-    setIsDev(isDevMode());
+    const dev = isDevMode();
+    if (dev) {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+    setIsDev(dev);
     setUsage(readUsage());
     setMounted(true);
   }, []);
