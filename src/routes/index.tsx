@@ -54,6 +54,7 @@ function Index() {
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [isDev, setIsDev] = useState(false);
   const findRecipeFn = useServerFn(findRecipe);
 
   useEffect(() => {
@@ -63,6 +64,7 @@ function Index() {
       window.location.replace(window.location.pathname);
       return;
     }
+    setIsDev(isDevMode());
     setUsage(readUsage());
     setMounted(true);
   }, []);
@@ -79,7 +81,7 @@ function Index() {
     return () => clearTimeout(t);
   }, [mounted]);
 
-  const limitReached = usage >= DAILY_LIMIT;
+  const limitReached = !isDev && usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
     mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
