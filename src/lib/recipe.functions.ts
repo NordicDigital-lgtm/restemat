@@ -350,7 +350,7 @@ function cleanString(value: unknown): string {
     .trim();
 }
 
-function stripWrappingBrackets(value: string): string {
+export function stripWrappingBrackets(value: string): string {
   // Remove parenthetical/bracketed content entirely (e.g. "salt (havsalt)" -> "salt"),
   // then strip any remaining stray brackets and trim leading/trailing punctuation.
   return value
