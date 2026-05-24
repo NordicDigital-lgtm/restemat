@@ -371,7 +371,7 @@ const NON_INGREDIENT_TOKENS = new Set([
   "list", "lists",
 ]);
 
-function cleanIngredientName(value: string): string {
+export function cleanIngredientName(value: string): string {
   if (!value) return "";
   // Cut off anything after a separator (comma, semicolon, colon, slash, pipe,
   // or a dash surrounded by spaces) — explanations / category labels follow these.
