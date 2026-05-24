@@ -20,8 +20,14 @@ function todayKey() {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
+function isDevMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem("devMode") === "1";
+}
+
 function readUsage(): number {
   if (typeof window === "undefined") return 0;
+  if (isDevMode()) return 0;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return 0;
@@ -35,6 +41,7 @@ function readUsage(): number {
 
 function writeUsage(count: number) {
   if (typeof window === "undefined") return;
+  if (isDevMode()) return;
   window.localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({ date: todayKey(), count }),
@@ -47,6 +54,7 @@ function Index() {
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [isDev, setIsDev] = useState(false);
   const findRecipeFn = useServerFn(findRecipe);
 
   useEffect(() => {
@@ -56,6 +64,7 @@ function Index() {
       window.location.replace(window.location.pathname);
       return;
     }
+    setIsDev(isDevMode());
     setUsage(readUsage());
     setMounted(true);
   }, []);
@@ -72,7 +81,7 @@ function Index() {
     return () => clearTimeout(t);
   }, [mounted]);
 
-  const limitReached = usage >= DAILY_LIMIT;
+  const limitReached = !isDev && usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
     mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
@@ -98,7 +107,7 @@ function Index() {
       return;
     }
     setClientNotice(null);
-    if (readUsage() >= DAILY_LIMIT) {
+    if (!isDev && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
@@ -185,7 +194,7 @@ function Index() {
         </div>
       )}
 
-      {mounted && (
+      {mounted && !isDev && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
