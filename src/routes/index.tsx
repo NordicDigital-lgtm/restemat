@@ -20,8 +20,14 @@ function todayKey() {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
+function isDevMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem("devMode") === "1";
+}
+
 function readUsage(): number {
   if (typeof window === "undefined") return 0;
+  if (isDevMode()) return 0;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return 0;
@@ -35,6 +41,7 @@ function readUsage(): number {
 
 function writeUsage(count: number) {
   if (typeof window === "undefined") return;
+  if (isDevMode()) return;
   window.localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({ date: todayKey(), count }),
