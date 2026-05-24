@@ -112,12 +112,10 @@ function Index() {
       return;
     }
     setClientNotice(null);
-    /* Daily limit check disabled
     if (!isDev && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
-    */
     setIngredients(cleaned);
     // Reset suggestion history when starting a fresh search (not a regenerate)
     const historyForCall = regenerate ? suggestedTitles : [];
