@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const LIMIT_DISABLED = true; // Set to false to re-enable daily search limit
+const LIMIT_DISABLED = false; // Set to true to disable daily search limit
 const DAILY_LIMIT = 3;
 const STORAGE_KEY = "restemat_daily_usage";
 
