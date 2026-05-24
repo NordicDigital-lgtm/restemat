@@ -97,7 +97,7 @@ function Index() {
   const sanitizeIngredients = (raw: string): string => {
     return raw
       .split(/[,\n;]+/)
-      .map((t) => t.trim())
+      .map((t) => cleanIngredientName(stripWrappingBrackets(t.trim())))
       .filter((t) => t.length >= 3 && /^[a-zA-ZæøåÆØÅ0-9\s.\-'/&]+$/.test(t))
       .join(", ");
   };
