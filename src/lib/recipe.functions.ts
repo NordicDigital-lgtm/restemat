@@ -361,16 +361,52 @@ function stripWrappingBrackets(value: string): string {
     .trim();
 }
 
+// Words that sometimes leak in from category labels, metadata, or model artifacts.
+// Stripped whenever they appear as trailing/leading tokens on an ingredient name.
+const NON_INGREDIENT_TOKENS = new Set([
+  "stories", "story", "garden", "category", "categories",
+  "tag", "tags", "label", "labels", "ingredient", "ingredients",
+  "metadata", "meta", "info", "note", "notes", "type", "types",
+  "group", "groups", "section", "sections", "item", "items",
+  "list", "lists",
+]);
+
+function cleanIngredientName(value: string): string {
+  if (!value) return "";
+  // Cut off anything after a separator (comma, semicolon, colon, slash, pipe,
+  // or a dash surrounded by spaces) — explanations / category labels follow these.
+  let s = value.split(/\s*[,;:/|]\s*|\s+[-–—]\s+/)[0] ?? value;
+  s = s.replace(/\s+/g, " ").trim();
+  // Strip leading/trailing non-ingredient tokens repeatedly.
+  let changed = true;
+  while (changed) {
+    changed = false;
+    const tokens = s.split(/\s+/).filter(Boolean);
+    if (tokens.length > 1 && NON_INGREDIENT_TOKENS.has(tokens[tokens.length - 1].toLowerCase())) {
+      tokens.pop();
+      s = tokens.join(" ");
+      changed = true;
+      continue;
+    }
+    if (tokens.length > 1 && NON_INGREDIENT_TOKENS.has(tokens[0].toLowerCase())) {
+      tokens.shift();
+      s = tokens.join(" ");
+      changed = true;
+    }
+  }
+  return s.replace(/^[\s,;.:!?\-–—]+|[\s,;.:!?\-–—]+$/g, "").trim();
+}
+
 function toStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   const out: string[] = [];
   for (const item of value) {
     if (typeof item === "string") {
-      const s = stripWrappingBrackets(cleanString(item));
+      const s = cleanIngredientName(stripWrappingBrackets(cleanString(item)));
       if (s) out.push(s);
     } else if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
-      const s = stripWrappingBrackets(cleanString(o.name ?? o.ingredient ?? o.item ?? o.value));
+      const s = cleanIngredientName(stripWrappingBrackets(cleanString(o.name ?? o.ingredient ?? o.item ?? o.value)));
       if (s) out.push(s);
     }
   }
@@ -383,7 +419,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
   for (const item of value) {
     if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
-      const name = stripWrappingBrackets(cleanString(o.name));
+      const name = cleanIngredientName(stripWrappingBrackets(cleanString(o.name)));
       if (!name) continue;
       out.push({
         amount: cleanString(o.amount),
@@ -391,7 +427,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
         name,
       });
     } else if (typeof item === "string") {
-      const s = stripWrappingBrackets(cleanString(item));
+      const s = cleanIngredientName(stripWrappingBrackets(cleanString(item)));
       if (s) out.push({ amount: "", unit: "", name: s });
     }
   }
