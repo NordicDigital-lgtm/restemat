@@ -150,18 +150,18 @@ function Index() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-8 px-5 py-10 sm:py-16">
       <header className="flex flex-col items-center text-center">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 ring-4 ring-primary/10">
           <ChefHat className="h-7 w-7" />
         </div>
-        <h1 className="text-4xl font-semibold sm:text-5xl">Restemat</h1>
-        <p className="mt-3 max-w-sm text-balance text-muted-foreground">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Restemat</h1>
+        <p className="mt-3 max-w-sm text-balance font-medium text-foreground/75">
           Fra rester til middag, helt enkelt.
         </p>
       </header>
 
       <form
         onSubmit={onSubmit}
-        className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-card p-4 shadow-sm sm:p-5"
+        className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-card p-4 shadow-md sm:p-5"
       >
         <Textarea
           value={ingredients}
@@ -225,7 +225,7 @@ function Index() {
       {mutation.data && !mutation.data.notFoodMessage && (
         <>
           {mutation.data.filteredOut.length > 0 && (
-            <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm font-medium text-muted-foreground">
               Vi fjernet følgende fra listen din siden det ikke er matvarer: <span className="font-medium text-foreground">{mutation.data.filteredOut.join(", ")}</span>. Oppskriften er basert på resten.
             </div>
           )}
@@ -274,11 +274,11 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
-        <h2 className="text-2xl font-semibold sm:text-3xl">{recipe.name}</h2>
-        <p className="mt-2 text-muted-foreground">{recipe.description}</p>
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{recipe.name}</h2>
+        <p className="mt-2 font-medium text-muted-foreground">{recipe.description}</p>
       </div>
 
-      <div className="grid gap-5 p-6 sm:p-7">
+      <div className="grid gap-6 p-6 sm:p-7">
         {recipe.haveIngredients.length > 0 && (
           <section>
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-success">
