@@ -236,32 +236,42 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
       }],
     } as Parameters<typeof model.generateContent>[0];
 
-    let result;
+    const toolSchema = (requestPayload.tools as Array<{ functionDeclarations: Array<{ name: string; description: string; parameters: Record<string, unknown> }> }>)[0].functionDeclarations[0];
+
+    let rawArgs: Record<string, unknown> | null = null;
     try {
-      result = await generateContentWithRetry(
+      const result = await generateContentWithRetry(
         () => model.generateContent(requestPayload),
         MAX_GENERATION_ATTEMPTS,
       );
-    } catch (error) {
-      console.error("Gemini generateContent failed", error);
-      return createEmptyRecipeResult({
-        serviceMessage: getRecipeGenerationErrorMessage(error),
-        fallback: true,
-      });
+      const functionCall = result.response.functionCalls()?.[0];
+      if (functionCall && functionCall.name === "foresla_middag") {
+        rawArgs = functionCall.args as Record<string, unknown>;
+      } else {
+        throw new Error("Gemini returned no tool call");
+      }
+    } catch (geminiError) {
+      console.error("Gemini generateContent failed, trying Claude fallback", geminiError);
+      try {
+        rawArgs = await callClaudeFallback(systemPrompt, userPrompt, toolSchema);
+      } catch (claudeError) {
+        console.error("Claude fallback also failed", claudeError);
+        return createEmptyRecipeResult({
+          serviceMessage: getRecipeGenerationErrorMessage(geminiError),
+          fallback: true,
+        });
+      }
     }
 
-    // Parse Gemini response
-    const response = result.response;
-    const functionCall = response.functionCalls()?.[0];
-    
-    if (!functionCall || functionCall.name !== "foresla_middag") {
+    if (!rawArgs) {
       return createEmptyRecipeResult({
         serviceMessage: "Kunne ikke lage oppskrift akkurat nå. Prøv igjen.",
         fallback: true,
       });
     }
 
-    const raw = functionCall.args as Record<string, unknown>;
+    const raw = rawArgs;
+
 
     // Handle error response
     if (raw.error === "not_food" && typeof raw.message === "string") {
