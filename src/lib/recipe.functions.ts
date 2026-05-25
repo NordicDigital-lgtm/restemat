@@ -57,7 +57,7 @@ export const findRecipe = createServerFn({ method: "POST" })
         topP: 0.95,
         topK: 40,
         maxOutputTokens: 8192,
-        thinkingConfig: { thinkingBudget: 2048 },
+        thinkingConfig: { thinkingBudget: 1024 },
       } as never,
     });
 
