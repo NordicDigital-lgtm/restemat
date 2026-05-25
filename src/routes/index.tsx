@@ -293,7 +293,7 @@ function Index() {
                   type="button"
                   size="lg"
                   disabled={mutation.isPending || limitReached}
-                  onClick={() => submit(mergedRecipe.unusedIngredients.join(", "), false, true)}
+                  onClick={() => submit(mergedRecipe.unusedIngredients.map((i) => i).join(", "), false, true)}
                   className="h-14 rounded-full bg-[#8FBF9F] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#7DAE8D] hover:shadow-xl"
                 >
                   Lag noe med restene
