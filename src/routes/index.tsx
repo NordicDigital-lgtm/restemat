@@ -51,6 +51,7 @@ function writeUsage(count: number) {
 
 function Index() {
   const [ingredients, setIngredients] = useState("");
+  const [originalIngredients, setOriginalIngredients] = useState<string[]>([]);
   const [lastSubmitted, setLastSubmitted] = useState("");
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [usage, setUsage] = useState(0);
@@ -102,7 +103,7 @@ function Index() {
       .join(", ");
   };
 
-  const submit = (value: string, regenerate?: boolean) => {
+  const submit = (value: string, regenerate?: boolean, leftovers?: boolean) => {
     const cleaned = sanitizeIngredients(value);
     if (!cleaned) {
       setClientNotice(
@@ -121,6 +122,10 @@ function Index() {
     const historyForCall = regenerate ? suggestedTitles : [];
     if (!regenerate) {
       setSuggestedTitles([]);
+    }
+    // Track original ingredient list across regenerate/leftovers cycles
+    if (!regenerate && !leftovers) {
+      setOriginalIngredients(cleaned.split(",").map((s) => s.trim()).filter(Boolean));
     }
     setLastSubmitted(cleaned);
     mutation.mutate(
@@ -239,52 +244,64 @@ function Index() {
         </div>
       )}
 
-      {mutation.data && !mutation.data.notFoodMessage && !mutation.data.serviceMessage && (
-        <>
-          {mutation.data.filteredOut.length > 0 && (
-            <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm font-medium text-muted-foreground">
-              Vi fjernet følgende fra listen din siden det ikke er matvarer: <span className="font-medium text-foreground">{mutation.data.filteredOut.join(", ")}</span>. Oppskriften er basert på resten.
-            </div>
-          )}
-          {mutation.data.lowIngredientNote && (
-            <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
-              {mutation.data.lowIngredientNote}
-            </div>
-          )}
-          <RecipeCard
-            recipe={mutation.data}
-            onRegenerate={() => submit(lastSubmitted, true)}
-            isPending={mutation.isPending}
-            limitReached={limitReached}
-          />
-          <div className="flex flex-col gap-4">
-            {mutation.data.unusedIngredients.length > 0 && (
-              <Button
-                type="button"
-                size="lg"
-                disabled={mutation.isPending || limitReached}
-                onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
-                className="h-14 rounded-full bg-[#5F8364] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#4F7355] hover:shadow-xl"
-              >
-                Lag noe med restene
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+      {mutation.data && !mutation.data.notFoodMessage && !mutation.data.serviceMessage && (() => {
+        const data = mutation.data;
+        // Merge any original ingredients that the model dropped entirely back into "passer ikke til denne retten"
+        const norm = (s: string) => s.toLowerCase().trim();
+        const placed = new Set<string>([
+          ...data.haveIngredients.map(norm),
+          ...data.missingIngredients.map(norm),
+          ...data.unsafeIngredients.map(norm),
+          ...data.unusedIngredients.map(norm),
+          ...data.filteredOut.map(norm),
+        ]);
+        const extraUnused = originalIngredients.filter((ing) => {
+          const n = norm(ing);
+          if (!n) return false;
+          if (placed.has(n)) return false;
+          for (const p of placed) {
+            if (p.includes(n) || n.includes(p)) return false;
+          }
+          return true;
+        });
+        const mergedRecipe: RecipeResult = extraUnused.length > 0
+          ? { ...data, unusedIngredients: [...data.unusedIngredients, ...extraUnused] }
+          : data;
+        return (
+          <>
+            {data.filteredOut.length > 0 && (
+              <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm font-medium text-muted-foreground">
+                Vi fjernet følgende fra listen din siden det ikke er matvarer: <span className="font-medium text-foreground">{data.filteredOut.join(", ")}</span>. Oppskriften er basert på resten.
+              </div>
             )}
-            {lastSubmitted && (
-              <Button
-                type="button"
-                size="lg"
-                disabled={mutation.isPending || limitReached}
-                onClick={() => submit(lastSubmitted, true)}
-                className="h-14 rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
-              >
-                Finn en ny rett
-                <RefreshCw className="ml-2 h-4 w-4" />
-              </Button>
+            {data.lowIngredientNote && (
+              <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
+                {data.lowIngredientNote}
+              </div>
             )}
-          </div>
-        </>
-      )}
+            <RecipeCard
+              recipe={mergedRecipe}
+              onMakeFromLeftovers={() => submit(mergedRecipe.unusedIngredients.join(", "), false, true)}
+              isPending={mutation.isPending}
+              limitReached={limitReached}
+            />
+            <div className="flex flex-col gap-4">
+              {lastSubmitted && (
+                <Button
+                  type="button"
+                  size="lg"
+                  disabled={mutation.isPending || limitReached}
+                  onClick={() => submit(lastSubmitted, true)}
+                  className="h-14 rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
+                >
+                  Finn en ny rett
+                  <RefreshCw className="ml-2 h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </>
+        );
+      })()}
 
       <InstallPrompt />
     </main>
@@ -294,15 +311,16 @@ function Index() {
 
 function RecipeCard({
   recipe,
-  onRegenerate,
+  onMakeFromLeftovers,
   isPending,
   limitReached,
 }: {
   recipe: RecipeResult;
-  onRegenerate: () => void;
+  onMakeFromLeftovers: () => void;
   isPending: boolean;
   limitReached: boolean;
 }) {
+  const hasLeftovers = recipe.unusedIngredients.length > 0;
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
@@ -356,12 +374,12 @@ function RecipeCard({
               ))}
             </ul>
             {recipe.unusedReason && (
-              <p className="mt-3 text-sm font-medium italic text-muted-foreground">
+              <p className="mt-4 rounded-xl border-l-4 border-muted-foreground/30 bg-muted/40 px-4 py-3 text-sm font-medium italic leading-relaxed text-muted-foreground">
                 {recipe.unusedReason}
               </p>
             )}
             {recipe.unsafeReason && (
-              <p className="mt-2 text-sm font-medium italic text-muted-foreground">
+              <p className="mt-3 rounded-xl border-l-4 border-destructive/30 bg-destructive/5 px-4 py-3 text-sm font-medium italic leading-relaxed text-muted-foreground">
                 Utelatt av sikkerhetsgrunner: {recipe.unsafeReason}
               </p>
             )}
@@ -426,26 +444,6 @@ function RecipeCard({
           </section>
         )}
 
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isPending || limitReached}
-          onClick={onRegenerate}
-          className="h-12 w-full rounded-full text-base font-semibold"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Finner middag...
-            </>
-          ) : (
-            <>
-              Lag noe annet
-              <RefreshCw className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </Button>
-
         {(recipe.sauceSuggestion || recipe.proteinSuggestion || recipe.carbSuggestion) && (
           <section className="rounded-2xl border border-border/60 bg-muted/40 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-foreground/80">
@@ -473,6 +471,28 @@ function RecipeCard({
               )}
             </ul>
           </section>
+        )}
+
+        {hasLeftovers && (
+          <Button
+            type="button"
+            size="lg"
+            disabled={isPending || limitReached}
+            onClick={onMakeFromLeftovers}
+            className="h-14 w-full rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Finner middag...
+              </>
+            ) : (
+              <>
+                Lag noe med restene
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
         )}
       </div>
     </article>
