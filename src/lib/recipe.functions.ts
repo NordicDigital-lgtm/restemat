@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const InputSchema = z.object({
   ingredients: z.string().min(1).max(2000),
@@ -37,10 +37,19 @@ export type RecipeResult = {
 export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<RecipeResult> => {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
 
-    const client = new Anthropic({ apiKey });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash-exp",
+      generationConfig: {
+        temperature: 1,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 8192,
+      },
+    });
 
     // Silently strip emoji from input before processing
     const sanitizedIngredients = stripEmoji(data.ingredients).trim();
@@ -101,16 +110,18 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
 
     const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`;
 
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 4096,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-      tools: [
+    const result = await model.generateContent({
+      contents: [
         {
+          role: "user",
+          parts: [{ text: systemPrompt + "\n\n" + userPrompt }]
+        }
+      ],
+      tools: [{
+        functionDeclarations: [{
           name: "foresla_middag",
           description: "Returner ett middagsforslag med full oppskrift",
-          input_schema: {
+          parameters: {
             type: "object",
             properties: {
               title: { type: "string", description: "Navn på retten" },
@@ -216,17 +227,19 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
               "steps",
             ],
           },
-        },
-      ],
+        }]
+      }],
     });
 
-    // Parse Anthropic response
-    const toolUse = response.content.find((block) => block.type === "tool_use");
-    if (!toolUse || toolUse.type !== "tool_use") {
+    // Parse Gemini response
+    const response = result.response;
+    const functionCall = response.functionCalls()?.[0];
+    
+    if (!functionCall || functionCall.name !== "foresla_middag") {
       throw new Error("AI returnerte ikke et gyldig verktøykall");
     }
 
-    const raw = toolUse.input as Record<string, unknown>;
+    const raw = functionCall.args as Record<string, unknown>;
 
     // Handle error response
     if (raw.error === "not_food" && typeof raw.message === "string") {
