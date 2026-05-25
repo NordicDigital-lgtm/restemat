@@ -244,52 +244,64 @@ function Index() {
         </div>
       )}
 
-      {mutation.data && !mutation.data.notFoodMessage && !mutation.data.serviceMessage && (
-        <>
-          {mutation.data.filteredOut.length > 0 && (
-            <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm font-medium text-muted-foreground">
-              Vi fjernet følgende fra listen din siden det ikke er matvarer: <span className="font-medium text-foreground">{mutation.data.filteredOut.join(", ")}</span>. Oppskriften er basert på resten.
-            </div>
-          )}
-          {mutation.data.lowIngredientNote && (
-            <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
-              {mutation.data.lowIngredientNote}
-            </div>
-          )}
-          <RecipeCard
-            recipe={mutation.data}
-            onRegenerate={() => submit(lastSubmitted, true)}
-            isPending={mutation.isPending}
-            limitReached={limitReached}
-          />
-          <div className="flex flex-col gap-4">
-            {mutation.data.unusedIngredients.length > 0 && (
-              <Button
-                type="button"
-                size="lg"
-                disabled={mutation.isPending || limitReached}
-                onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
-                className="h-14 rounded-full bg-[#5F8364] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#4F7355] hover:shadow-xl"
-              >
-                Lag noe med restene
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+      {mutation.data && !mutation.data.notFoodMessage && !mutation.data.serviceMessage && (() => {
+        const data = mutation.data;
+        // Merge any original ingredients that the model dropped entirely back into "passer ikke til denne retten"
+        const norm = (s: string) => s.toLowerCase().trim();
+        const placed = new Set<string>([
+          ...data.haveIngredients.map(norm),
+          ...data.missingIngredients.map(norm),
+          ...data.unsafeIngredients.map(norm),
+          ...data.unusedIngredients.map(norm),
+          ...data.filteredOut.map(norm),
+        ]);
+        const extraUnused = originalIngredients.filter((ing) => {
+          const n = norm(ing);
+          if (!n) return false;
+          if (placed.has(n)) return false;
+          for (const p of placed) {
+            if (p.includes(n) || n.includes(p)) return false;
+          }
+          return true;
+        });
+        const mergedRecipe: RecipeResult = extraUnused.length > 0
+          ? { ...data, unusedIngredients: [...data.unusedIngredients, ...extraUnused] }
+          : data;
+        return (
+          <>
+            {data.filteredOut.length > 0 && (
+              <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm font-medium text-muted-foreground">
+                Vi fjernet følgende fra listen din siden det ikke er matvarer: <span className="font-medium text-foreground">{data.filteredOut.join(", ")}</span>. Oppskriften er basert på resten.
+              </div>
             )}
-            {lastSubmitted && (
-              <Button
-                type="button"
-                size="lg"
-                disabled={mutation.isPending || limitReached}
-                onClick={() => submit(lastSubmitted, true)}
-                className="h-14 rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
-              >
-                Finn en ny rett
-                <RefreshCw className="ml-2 h-4 w-4" />
-              </Button>
+            {data.lowIngredientNote && (
+              <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
+                {data.lowIngredientNote}
+              </div>
             )}
-          </div>
-        </>
-      )}
+            <RecipeCard
+              recipe={mergedRecipe}
+              onMakeFromLeftovers={() => submit(mergedRecipe.unusedIngredients.join(", "), false, true)}
+              isPending={mutation.isPending}
+              limitReached={limitReached}
+            />
+            <div className="flex flex-col gap-4">
+              {lastSubmitted && (
+                <Button
+                  type="button"
+                  size="lg"
+                  disabled={mutation.isPending || limitReached}
+                  onClick={() => submit(lastSubmitted, true)}
+                  className="h-14 rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
+                >
+                  Finn en ny rett
+                  <RefreshCw className="ml-2 h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </>
+        );
+      })()}
 
       <InstallPrompt />
     </main>
