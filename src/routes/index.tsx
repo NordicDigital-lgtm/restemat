@@ -251,7 +251,12 @@ function Index() {
               {mutation.data.lowIngredientNote}
             </div>
           )}
-          <RecipeCard recipe={mutation.data} />
+          <RecipeCard
+            recipe={mutation.data}
+            onRegenerate={() => submit(lastSubmitted, true)}
+            isPending={mutation.isPending}
+            limitReached={limitReached}
+          />
           <div className="flex flex-col gap-4">
             {mutation.data.unusedIngredients.length > 0 && (
               <Button
@@ -287,7 +292,17 @@ function Index() {
   );
 }
 
-function RecipeCard({ recipe }: { recipe: RecipeResult }) {
+function RecipeCard({
+  recipe,
+  onRegenerate,
+  isPending,
+  limitReached,
+}: {
+  recipe: RecipeResult;
+  onRegenerate: () => void;
+  isPending: boolean;
+  limitReached: boolean;
+}) {
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
