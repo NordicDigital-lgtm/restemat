@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import Anthropic from "@anthropic-ai/sdk";
+
+const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const LOVABLE_MODEL = "google/gemini-3-flash-preview";
+
 
 
 const InputSchema = z.object({
@@ -44,21 +46,11 @@ const RETRYABLE_STATUS_CODES = new Set([429, 503, 504]);
 export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<RecipeResult> => {
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    console.log("API Key exists:", !!process.env.GOOGLE_AI_API_KEY);
-    console.log("Using model: gemini-1.5-flash");
+    const apiKey = process.env.LOVABLE_API_KEY;
+    console.log("LOVABLE_API_KEY exists:", !!apiKey);
+    console.log("Using model:", LOVABLE_MODEL);
     if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 1,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 8192,
-      },
-    });
 
     // Silently strip emoji from input before processing
     const sanitizedIngredients = stripEmoji(data.ingredients).trim();
@@ -124,153 +116,127 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
 
     const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`;
 
-    const requestPayload = {
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: systemPrompt + "\n\n" + userPrompt }]
-        }
-      ],
-      tools: [{
-        functionDeclarations: [{
-          name: "foresla_middag",
-          description: "Returner ett middagsforslag med full oppskrift",
-          parameters: {
+    const toolParameters = {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Navn på retten" },
+        description: {
+          type: "string",
+          description: "Kort, varm beskrivelse (1–2 setninger)",
+        },
+        has_ingredients: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Ingredienser brukeren har som brukes i retten (kun rene navn)",
+        },
+        missing_ingredients: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Ingredienser brukeren mangler (maks 3). Kun rene navn.",
+        },
+        full_ingredients: {
+          type: "array",
+          items: {
             type: "object",
             properties: {
-              title: { type: "string", description: "Navn på retten" },
-              description: {
-                type: "string",
-                description: "Kort, varm beskrivelse (1–2 setninger)",
-              },
-              has_ingredients: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ingredienser brukeren har som brukes i retten (kun rene navn)",
-              },
-              missing_ingredients: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ingredienser brukeren mangler (maks 3). Kun rene navn.",
-              },
-              full_ingredients: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    amount: { type: "string", description: "Mengde, f.eks. 400" },
-                    unit: { type: "string", description: "Enhet, f.eks. g, dl, stk" },
-                    name: { type: "string", description: "Ingrediensnavn" },
-                  },
-                  required: ["amount", "unit", "name"],
-                },
-                description: "Full ingrediensliste med mengder og enheter",
-              },
-              steps: {
-                type: "array",
-                items: { type: "string" },
-                description: "Fremgangsmåte i enkle steg",
-              },
-              low_ingredient_note: {
-                type: "string",
-                description:
-                  'Hvis brukeren har svært få ingredienser (1–2), inkluder en kort melding som "Du har lite å jobbe med — her er noe enkelt du kan lage med bare et par ekstra ting." Ellers null.',
-              },
-              unused_ingredients: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ingredienser brukeren har som ikke passer til denne retten. Kun rene navn akkurat slik brukeren skrev dem, ingen tilleggstekst.",
-              },
-              unused_reason: {
-                type: "string",
-                description:
-                  "Én kort, vennlig norsk setning som forklarer hvorfor unused_ingredients ikke brukes. Utelat hvis ingen unused_ingredients.",
-              },
-              unsafe_ingredients: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ingredienser som er giftige/helsefarlige eller krever spesialistkunnskap",
-              },
-              unsafe_reason: {
-                type: "string",
-                description:
-                  "Kort forklaring på hvorfor unsafe_ingredients ikke brukes. Utelat hvis ingen unsafe_ingredients.",
-              },
-              filtered_out: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ikke-matvarer som ble filtrert bort (rengjøring, hygieneartikler, nonsens). Bruk brukerens egen skrivemåte.",
-              },
-              error: {
-                type: "string",
-                description:
-                  'Feilkode hvis brukerens input er ugyldig. Eneste tillatte verdi er "not_food".',
-              },
-              message: {
-                type: "string",
-                description:
-                  'Kun brukt ved error="not_food". Gi en vennlig melding som "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet."',
-              },
-              protein_suggestion: {
-                type: "string",
-                description:
-                  "Ett kort forslag til protein (f.eks. 'Kyllingfilet eller laks') bare hvis retten mangler protein og brukeren ikke allerede har protein. Ellers null.",
-              },
-              carb_suggestion: {
-                type: "string",
-                description:
-                  "Ett kort forslag til karbohydrat (f.eks. 'Kokt ris eller ovnsbakte poteter') bare hvis retten mangler karbohydrat. Ellers null.",
-              },
-              sauce_suggestion: {
-                type: "string",
-                description:
-                  "Ett kort forslag til saus (f.eks. 'En enkel pannesaus laget av stekesjyen') bare hvis retten mangler saus. Ellers null.",
-              },
+              amount: { type: "string", description: "Mengde, f.eks. 400" },
+              unit: { type: "string", description: "Enhet, f.eks. g, dl, stk" },
+              name: { type: "string", description: "Ingrediensnavn" },
             },
-            required: [
-              "title",
-              "description",
-              "has_ingredients",
-              "missing_ingredients",
-              "full_ingredients",
-              "steps",
-            ],
+            required: ["amount", "unit", "name"],
           },
-        }]
-      }],
-    } as Parameters<typeof model.generateContent>[0];
-
-    const toolSchema = (requestPayload as unknown as { tools: Array<{ functionDeclarations: Array<{ name: string; description: string; parameters: Record<string, unknown> }> }> }).tools[0].functionDeclarations[0];
+          description: "Full ingrediensliste med mengder og enheter",
+        },
+        steps: {
+          type: "array",
+          items: { type: "string" },
+          description: "Fremgangsmåte i enkle steg",
+        },
+        low_ingredient_note: {
+          type: "string",
+          description:
+            'Hvis brukeren har svært få ingredienser (1–2), inkluder en kort melding som "Du har lite å jobbe med — her er noe enkelt du kan lage med bare et par ekstra ting." Ellers null.',
+        },
+        unused_ingredients: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Ingredienser brukeren har som ikke passer til denne retten. Kun rene navn akkurat slik brukeren skrev dem, ingen tilleggstekst.",
+        },
+        unused_reason: {
+          type: "string",
+          description:
+            "Én kort, vennlig norsk setning som forklarer hvorfor unused_ingredients ikke brukes. Utelat hvis ingen unused_ingredients.",
+        },
+        unsafe_ingredients: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Ingredienser som er giftige/helsefarlige eller krever spesialistkunnskap",
+        },
+        unsafe_reason: {
+          type: "string",
+          description:
+            "Kort forklaring på hvorfor unsafe_ingredients ikke brukes. Utelat hvis ingen unsafe_ingredients.",
+        },
+        filtered_out: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Ikke-matvarer som ble filtrert bort (rengjøring, hygieneartikler, nonsens). Bruk brukerens egen skrivemåte.",
+        },
+        error: {
+          type: "string",
+          description:
+            'Feilkode hvis brukerens input er ugyldig. Eneste tillatte verdi er "not_food".',
+        },
+        message: {
+          type: "string",
+          description:
+            'Kun brukt ved error="not_food". Gi en vennlig melding som "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet."',
+        },
+        protein_suggestion: {
+          type: "string",
+          description:
+            "Ett kort forslag til protein (f.eks. 'Kyllingfilet eller laks') bare hvis retten mangler protein og brukeren ikke allerede har protein. Ellers null.",
+        },
+        carb_suggestion: {
+          type: "string",
+          description:
+            "Ett kort forslag til karbohydrat (f.eks. 'Kokt ris eller ovnsbakte poteter') bare hvis retten mangler karbohydrat. Ellers null.",
+        },
+        sauce_suggestion: {
+          type: "string",
+          description:
+            "Ett kort forslag til saus (f.eks. 'En enkel pannesaus laget av stekesjyen') bare hvis retten mangler saus. Ellers null.",
+        },
+      },
+      required: [
+        "title",
+        "description",
+        "has_ingredients",
+        "missing_ingredients",
+        "full_ingredients",
+        "steps",
+      ],
+    } as Record<string, unknown>;
 
     let rawArgs: Record<string, unknown> | null = null;
     try {
-      const result = await generateContentWithRetry(
-        () => model.generateContent(requestPayload),
+      rawArgs = await generateContentWithRetry(
+        () => callLovableGateway(apiKey, systemPrompt, userPrompt, toolParameters),
         MAX_GENERATION_ATTEMPTS,
       );
-      const functionCall = result.response.functionCalls()?.[0];
-      if (functionCall && functionCall.name === "foresla_middag") {
-        rawArgs = functionCall.args as Record<string, unknown>;
-      } else {
-        throw new Error("Gemini returned no tool call");
-      }
-    } catch (geminiError) {
-      console.error("Gemini generateContent failed, trying Claude fallback", geminiError);
-      try {
-        rawArgs = await callClaudeFallback(systemPrompt, userPrompt, toolSchema);
-      } catch (claudeError) {
-        console.error("Claude fallback also failed", claudeError);
-        return createEmptyRecipeResult({
-          serviceMessage: getRecipeGenerationErrorMessage(geminiError),
-          fallback: true,
-        });
-      }
+    } catch (gatewayError) {
+      console.error("Lovable AI gateway failed", gatewayError);
+      return createEmptyRecipeResult({
+        serviceMessage: getRecipeGenerationErrorMessage(gatewayError),
+        fallback: true,
+      });
     }
+
 
     if (!rawArgs) {
       return createEmptyRecipeResult({
@@ -521,40 +487,66 @@ async function generateContentWithRetry<T>(
   throw lastError;
 }
 
-async function callClaudeFallback(
+async function callLovableGateway(
+  apiKey: string,
   systemPrompt: string,
   userPrompt: string,
-  toolSchema: { name: string; description: string; parameters: Record<string, unknown> },
+  toolParameters: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY is not configured");
-  }
-
-  const anthropic = new Anthropic({ apiKey });
-  const response = await anthropic.messages.create({
-    model: "claude-3-5-haiku-20241022",
-    max_tokens: 4096,
-    system: systemPrompt,
-    tools: [
-      {
-        name: toolSchema.name,
-        description: toolSchema.description,
-        input_schema: toolSchema.parameters as Anthropic.Tool["input_schema"],
-      },
-    ],
-    tool_choice: { type: "tool", name: toolSchema.name },
-    messages: [{ role: "user", content: userPrompt }],
+  const response = await fetch(LOVABLE_AI_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Lovable-API-Key": apiKey,
+      "X-Lovable-AIG-SDK": "raw-fetch",
+    },
+    body: JSON.stringify({
+      model: LOVABLE_MODEL,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "foresla_middag",
+            description: "Returner ett middagsforslag med full oppskrift",
+            parameters: toolParameters,
+          },
+        },
+      ],
+      tool_choice: { type: "function", function: { name: "foresla_middag" } },
+    }),
   });
 
-  for (const block of response.content) {
-    if (block.type === "tool_use" && block.name === toolSchema.name) {
-      return block.input as Record<string, unknown>;
-    }
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    const err = new Error(`Lovable AI gateway ${response.status}: ${text}`) as Error & { status?: number };
+    err.status = response.status;
+    throw err;
   }
 
-  throw new Error("Claude returned no tool_use block");
+  const json = (await response.json()) as {
+    choices?: Array<{
+      message?: {
+        tool_calls?: Array<{ function?: { name?: string; arguments?: string } }>;
+      };
+    }>;
+  };
+
+  const toolCall = json.choices?.[0]?.message?.tool_calls?.[0]?.function;
+  if (!toolCall || toolCall.name !== "foresla_middag" || !toolCall.arguments) {
+    throw new Error("Lovable AI gateway returned no tool call");
+  }
+
+  try {
+    return JSON.parse(toolCall.arguments) as Record<string, unknown>;
+  } catch {
+    throw new Error("Lovable AI gateway returned invalid tool arguments JSON");
+  }
 }
+
 
 
 function createEmptyRecipeResult(
