@@ -166,6 +166,14 @@ function Index() {
         <Textarea
           value={ingredients}
           onChange={(e) => setIngredients(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              if (!mutation.isPending && ingredients.trim() && !limitReached) {
+                submit(ingredients);
+              }
+            }
+          }}
           placeholder="F.eks. kyllingfilet, ris, paprika, soyasaus, hvitløk, gulrot..."
           className="min-h-32 resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
           disabled={mutation.isPending}
