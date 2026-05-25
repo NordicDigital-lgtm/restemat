@@ -103,7 +103,7 @@ function Index() {
       .join(", ");
   };
 
-  const submit = (value: string, regenerate?: boolean) => {
+  const submit = (value: string, regenerate?: boolean, leftovers?: boolean) => {
     const cleaned = sanitizeIngredients(value);
     if (!cleaned) {
       setClientNotice(
@@ -122,6 +122,10 @@ function Index() {
     const historyForCall = regenerate ? suggestedTitles : [];
     if (!regenerate) {
       setSuggestedTitles([]);
+    }
+    // Track original ingredient list across regenerate/leftovers cycles
+    if (!regenerate && !leftovers) {
+      setOriginalIngredients(cleaned.split(",").map((s) => s.trim()).filter(Boolean));
     }
     setLastSubmitted(cleaned);
     mutation.mutate(
