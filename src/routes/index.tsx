@@ -481,7 +481,7 @@ function RecipeCard({
             size="lg"
             disabled={isPending || limitReached}
             onClick={onMakeSomethingElse}
-            className="h-14 w-full rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
+            className="h-14 w-full rounded-full border border-orange-500 bg-white text-base font-bold text-orange-600 shadow-sm hover:bg-amber-50"
           >
             {isPending ? (
               <>
