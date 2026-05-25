@@ -40,6 +40,8 @@ export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<RecipeResult> => {
     const apiKey = process.env.GOOGLE_AI_API_KEY;
+    console.log("API Key exists:", !!process.env.GOOGLE_AI_API_KEY);
+    console.log("Using model: gemini-2.0-flash");
     if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
 
     const genAI = new GoogleGenerativeAI(apiKey);
