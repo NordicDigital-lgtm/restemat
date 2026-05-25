@@ -274,7 +274,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
-        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{recipe.name}</h2>
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{recipe.name}</h2>
         <p className="mt-2 font-medium text-muted-foreground">{recipe.description}</p>
       </div>
 
