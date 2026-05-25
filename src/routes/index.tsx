@@ -289,12 +289,12 @@ function Index() {
             />
             <div className="flex flex-col gap-4">
               {mergedRecipe.unusedIngredients.length > 0 && (
-                <Button
+              <Button
                   type="button"
                   size="lg"
                   disabled={mutation.isPending || limitReached}
                   onClick={() => submit(mergedRecipe.unusedIngredients.map((i) => i).join(", "), false, true)}
-                  className="h-14 rounded-full bg-[#8FBF9F] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#7DAE8D] hover:shadow-xl"
+                  className="h-14 rounded-full border-2 border-white/20 bg-[#8FBF9F] text-base font-bold text-white shadow-lg hover:bg-[#7DAE8D]"
                 >
                   Lag noe med restene
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -481,7 +481,7 @@ function RecipeCard({
             size="lg"
             disabled={isPending || limitReached}
             onClick={onMakeSomethingElse}
-            className="h-14 w-full rounded-full border border-orange-500 bg-white text-base font-bold text-orange-600 shadow-sm hover:bg-amber-50"
+            className="h-14 w-full rounded-full border-2 border-white/20 bg-[#DC9275] text-base font-bold text-white shadow-lg hover:bg-[#C87D5F]"
           >
             {isPending ? (
               <>
