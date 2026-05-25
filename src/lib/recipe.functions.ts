@@ -52,7 +52,8 @@ export const findRecipe = createServerFn({ method: "POST" })
         topP: 0.95,
         topK: 40,
         maxOutputTokens: 8192,
-      },
+        thinkingConfig: { thinkingBudget: 0 },
+      } as never,
     });
 
     // Silently strip emoji from input before processing
