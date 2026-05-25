@@ -123,8 +123,10 @@ function Index() {
     if (!regenerate) {
       setSuggestedTitles([]);
     }
-    // Track original ingredient list across regenerate/leftovers cycles
-    if (!regenerate && !leftovers) {
+    // Track ingredient list across regenerate/leftovers cycles.
+    // For a fresh search or "lag noe med restene" (new ingredient set), reset the tracker
+    // so validation in the result compares against the actual current input.
+    if (!regenerate) {
       setOriginalIngredients(cleaned.split(",").map((s) => s.trim()).filter(Boolean));
     }
     setLastSubmitted(cleaned);
