@@ -41,12 +41,12 @@ export const findRecipe = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<RecipeResult> => {
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     console.log("API Key exists:", !!process.env.GOOGLE_AI_API_KEY);
-    console.log("Using model: gemini-2.0-flash");
+    console.log("Using model: gemini-2.5-flash");
     if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       generationConfig: {
         temperature: 1,
         topP: 0.95,
