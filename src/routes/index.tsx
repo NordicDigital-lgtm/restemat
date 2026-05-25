@@ -426,6 +426,26 @@ function RecipeCard({
           </section>
         )}
 
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isPending || limitReached}
+          onClick={onRegenerate}
+          className="h-12 w-full rounded-full text-base font-semibold"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Finner middag...
+            </>
+          ) : (
+            <>
+              Lag noe annet
+              <RefreshCw className="ml-2 h-4 w-4" />
+            </>
+          )}
+        </Button>
+
         {(recipe.sauceSuggestion || recipe.proteinSuggestion || recipe.carbSuggestion) && (
           <section className="rounded-2xl border border-border/60 bg-muted/40 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-foreground/80">
