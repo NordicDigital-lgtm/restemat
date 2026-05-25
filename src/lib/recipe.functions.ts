@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import Anthropic from "@anthropic-ai/sdk";
 
 const InputSchema = z.object({
   ingredients: z.string().min(1).max(2000),
@@ -36,8 +37,10 @@ export type RecipeResult = {
 export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<RecipeResult> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY mangler");
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
+
+    const client = new Anthropic({ apiKey });
 
     // Silently strip emoji from input before processing
     const sanitizedIngredients = stripEmoji(data.ingredients).trim();
@@ -53,19 +56,7 @@ export const findRecipe = createServerFn({ method: "POST" })
       };
     }
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            {
-              role: "system",
-              content:
-                `Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Følg disse reglene:
+    const systemPrompt = `Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Følg disse reglene:
 
 0) FILTRERING (gjør ALLTID dette FØRST): Klassifiser hver ingrediens brukeren oppgir som enten "food" eller "not_food". Ikke-mat omfatter: rengjøringsprodukter (f.eks. Zalo, Domestos, Fairy, Jif, Klorin), hygieneprodukter (såpe, tannkrem, sjampo), emballasje, verktøy, merkevarer som ikke er mat, og fullstendig uforståelige nonsensord. Legg ALLE filtrerte elementer i feltet filtered_out (bruk brukerens egen skrivemåte). Bruk ALDRI filtrerte elementer i has_ingredients, full_ingredients, unused_ingredients eller noe annet sted i oppskriften.
 
@@ -106,159 +97,139 @@ FORMAT:
 - ALDRI foreslå en ingrediens i "Kan passe fint med:" som brukeren allerede har oppgitt som input. Hvis brukeren har poteter, ris, pasta, brød eller annen karbohydrat — bruk det i retten i stedet for å foreslå det her.
 - POTETTILBEREDNING: Når du foreslår poteter som tilbehør, velg alltid den tilberedningsmåten som passer best til retten. Kokte poteter skal kun foreslås ved retter som naturlig passer med dem, som pochert eller dampet fisk, gryteretter, eller tradisjonelle norske middager. For pannestekte retter som omelett eller rørte egg, foreslå stekte eller ovnsbakte poteter i stedet — eller hopp over poteter helt hvis et annet tilbehør er mer naturlig.
 
-Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestion, carb_suggestion og sauce_suggestion til null/tom.`,
+Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestion, carb_suggestion og sauce_suggestion til null/tom.`;
 
-            },
-            {
-              role: "user",
-              content: `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`,
-            },
-          ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "foresla_middag",
-              description: "Returner ett middagsforslag med full oppskrift",
-              parameters: {
-                type: "object",
-                properties: {
-                  title: { type: "string", description: "Navn på retten" },
-                  description: {
-                    type: "string",
-                    description: "Kort, varm beskrivelse (1–2 setninger)",
+    const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`;
+
+    const response = await client.messages.create({
+      model: "claude-3-5-sonnet-20241022",
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+      tools: [
+        {
+          name: "foresla_middag",
+          description: "Returner ett middagsforslag med full oppskrift",
+          input_schema: {
+            type: "object",
+            properties: {
+              title: { type: "string", description: "Navn på retten" },
+              description: {
+                type: "string",
+                description: "Kort, varm beskrivelse (1–2 setninger)",
+              },
+              has_ingredients: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Ingredienser brukeren har som brukes i retten (kun rene navn)",
+              },
+              missing_ingredients: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Ingredienser brukeren mangler (maks 3). Kun rene navn.",
+              },
+              full_ingredients: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    amount: { type: "string", description: "Mengde, f.eks. 400" },
+                    unit: { type: "string", description: "Enhet, f.eks. g, dl, stk" },
+                    name: { type: "string", description: "Ingrediensnavn" },
                   },
-                  has_ingredients: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Ingredienser fra brukerens liste som inngår",
-                  },
-                  missing_ingredients: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Maks 2–3 ingredienser som mangler",
-                  },
-                  full_ingredients: {
-                    type: "array",
-                    description: "Komplett ingrediensliste med mengder",
-                    items: {
-                      type: "object",
-                      properties: {
-                        amount: { type: "string", description: "Mengde, f.eks. '2', '0.5', 'en klype'" },
-                        unit: { type: "string", description: "Enhet, f.eks. 'dl', 'g', 'ss', 'stk'. Kan være tom." },
-                        name: { type: "string", description: "Ingrediensnavn på norsk" },
-                      },
-                      required: ["amount", "unit", "name"],
-                      additionalProperties: false,
-                    },
-                  },
-                  steps: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Fremgangsmåte som korte, klare steg på norsk",
-                  },
-                  unused_ingredients: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Matvarer brukeren har, men som ikke passer til den valgte retten (f.eks. fra annen matkultur eller kategori). Bruk uansett antall ingredienser. Tom liste hvis alt passer.",
-                  },
-                  unused_reason: {
-                    type: "string",
-                    description: "Kort, vennlig norsk forklaring på hvorfor unused_ingredients ikke passer, f.eks. 'Disse passer bedre til en asiatisk rett — prøv dem en annen kveld.' Utelat hvis unused_ingredients er tom.",
-                  },
-                  unsafe_ingredients: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Ingredienser som er giftige, helsefarlige eller krever spesialistkunnskap (f.eks. fugu, rå kassava, ville sopp uten sikker ID, rabarbrablader). Skal ALDRI brukes i oppskriften eller dukke opp i unused_ingredients.",
-                  },
-                  unsafe_reason: {
-                    type: "string",
-                    description: "Kort norsk forklaring på hvorfor unsafe_ingredients ble utelatt av sikkerhetsgrunner. Utelat hvis unsafe_ingredients er tom.",
-                  },
-                  filtered_out: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Elementer fra brukerens input som er ikke-mat (rengjøring, hygiene, merkevarer som Zalo/Domestos/Fairy, nonsens). Bruk brukerens egen skrivemåte. Tom liste hvis alt er mat.",
-                  },
-                  low_ingredient_note: {
-                    type: "string",
-                    description: "Vennlig melding når brukeren har svært få ingredienser (1–2). Kun inkluder hvis relevant.",
-                  },
-                  protein_suggestion: {
-                    type: "string",
-                    description: "Kort forslag til protein uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Stekte kyllingvinger eller grillede scampi'. ALDRI foreslå protein hvis brukerens input inneholder kjøtt, fisk, fjørfe, egg, eller belgvekster/linser/bønner.",
-                  },
-                  carb_suggestion: {
-                    type: "string",
-                    description: "Kort forslag til karbohydrat uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'Kokt ris eller ovnsbakte poteter'. ALLTID foreslå når oppskriften mangler karbohydrat — inkludert curry og gryterett der ris/naan er naturlig.",
-                  },
-                  sauce_suggestion: {
-                    type: "string",
-                    description: "Kort sausforslag uten fet skrift eller etikett. Ett enkelt kulepunkt, f.eks. 'En enkel pannesaus laget av stekesjyen'. Utelat hvis oppskriften allerede inneholder en saus, dressing, sjy eller pannesaus.",
-                  },
-                  error: {
-                    type: "string",
-                    enum: ["not_food"],
-                    description: "Sett til 'not_food' hvis input ikke er matvarer. Ellers utelat.",
-                  },
-                  message: {
-                    type: "string",
-                    description: "Feilmelding når error er satt. Ellers utelat.",
-                  },
+                  required: ["amount", "unit", "name"],
                 },
-                required: [
-                  "title",
-                  "description",
-                  "has_ingredients",
-                  "missing_ingredients",
-                  "full_ingredients",
-                  "steps",
-                ],
-                additionalProperties: false,
+                description: "Full ingrediensliste med mengder og enheter",
+              },
+              steps: {
+                type: "array",
+                items: { type: "string" },
+                description: "Fremgangsmåte i enkle steg",
+              },
+              low_ingredient_note: {
+                type: "string",
+                description:
+                  'Hvis brukeren har svært få ingredienser (1–2), inkluder en kort melding som "Du har lite å jobbe med — her er noe enkelt du kan lage med bare et par ekstra ting." Ellers null.',
+              },
+              unused_ingredients: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Ingredienser brukeren har som ikke passer til denne retten. Kun rene navn akkurat slik brukeren skrev dem, ingen tilleggstekst.",
+              },
+              unused_reason: {
+                type: "string",
+                description:
+                  "Én kort, vennlig norsk setning som forklarer hvorfor unused_ingredients ikke brukes. Utelat hvis ingen unused_ingredients.",
+              },
+              unsafe_ingredients: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Ingredienser som er giftige/helsefarlige eller krever spesialistkunnskap",
+              },
+              unsafe_reason: {
+                type: "string",
+                description:
+                  "Kort forklaring på hvorfor unsafe_ingredients ikke brukes. Utelat hvis ingen unsafe_ingredients.",
+              },
+              filtered_out: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Ikke-matvarer som ble filtrert bort (rengjøring, hygieneartikler, nonsens). Bruk brukerens egen skrivemåte.",
+              },
+              error: {
+                type: "string",
+                description:
+                  'Feilkode hvis brukerens input er ugyldig. Eneste tillatte verdi er "not_food".',
+              },
+              message: {
+                type: "string",
+                description:
+                  'Kun brukt ved error="not_food". Gi en vennlig melding som "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet."',
+              },
+              protein_suggestion: {
+                type: "string",
+                description:
+                  "Ett kort forslag til protein (f.eks. 'Kyllingfilet eller laks') bare hvis retten mangler protein og brukeren ikke allerede har protein. Ellers null.",
+              },
+              carb_suggestion: {
+                type: "string",
+                description:
+                  "Ett kort forslag til karbohydrat (f.eks. 'Kokt ris eller ovnsbakte poteter') bare hvis retten mangler karbohydrat. Ellers null.",
+              },
+              sauce_suggestion: {
+                type: "string",
+                description:
+                  "Ett kort forslag til saus (f.eks. 'En enkel pannesaus laget av stekesjyen') bare hvis retten mangler saus. Ellers null.",
               },
             },
+            required: [
+              "title",
+              "description",
+              "has_ingredients",
+              "missing_ingredients",
+              "full_ingredients",
+              "steps",
+            ],
           },
-        ],
-        tool_choice: { type: "function", function: { name: "foresla_middag" } },
-      }),
+        },
+      ],
     });
 
-    if (!res.ok) {
-      if (res.status === 429) throw new Error("For mange forespørsler – prøv igjen om litt.");
-      if (res.status === 402) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
-      const t = await res.text();
-      throw new Error(`AI-feil (${res.status}): ${t.slice(0, 200)}`);
+    // Parse Anthropic response
+    const toolUse = response.content.find((block) => block.type === "tool_use");
+    if (!toolUse || toolUse.type !== "tool_use") {
+      throw new Error("AI returnerte ikke et gyldig verktøykall");
     }
 
-    const json = await res.json();
-    const message = json.choices?.[0]?.message;
-    const call = message?.tool_calls?.[0];
+    const raw = toolUse.input as Record<string, unknown>;
 
-    let raw: string | undefined = call?.function?.arguments;
-    if (!raw && typeof message?.content === "string") raw = message.content;
-    if (!raw) throw new Error("Uventet svar fra AI");
-
-    const parsed = extractJson(raw) as {
-      title?: string;
-      description?: string;
-      has_ingredients?: unknown;
-      missing_ingredients?: unknown;
-      full_ingredients?: unknown;
-      steps?: unknown;
-      unused_ingredients?: unknown;
-      unused_reason?: unknown;
-      unsafe_ingredients?: unknown;
-      unsafe_reason?: unknown;
-      filtered_out?: unknown;
-      low_ingredient_note?: unknown;
-      protein_suggestion?: unknown;
-      carb_suggestion?: unknown;
-      sauce_suggestion?: unknown;
-      error?: string;
-      message?: string;
-    };
-
-    if (parsed.error === "not_food") {
+    // Handle error response
+    if (raw.error === "not_food" && typeof raw.message === "string") {
       return {
         name: "",
         description: "",
@@ -272,63 +243,61 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
         unsafeIngredients: [],
         unsafeReason: null,
         filteredOut: [],
-        notFoodMessage:
-          (typeof parsed.message === "string" && cleanString(parsed.message)) ||
-          "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet.",
+        notFoodMessage: cleanString(raw.message),
         proteinSuggestion: null,
         carbSuggestion: null,
         sauceSuggestion: null,
       };
     }
 
-    const unusedIngredients = toStringArray(parsed.unused_ingredients);
-    const unsafeIngredients = toStringArray(parsed.unsafe_ingredients);
+    // Parse successful recipe response
+    const title = cleanString(raw.title);
+    const description = cleanString(raw.description);
+    const haveIngredients = toStringArray(raw.has_ingredients);
+    const missingIngredients = toStringArray(raw.missing_ingredients);
+    const fullIngredients = toFullIngredients(raw.full_ingredients);
+    const steps = toStringArray(raw.steps);
+    const lowIngredientNote = raw.low_ingredient_note
+      ? cleanString(raw.low_ingredient_note)
+      : null;
+    const unusedIngredients = toStringArray(raw.unused_ingredients);
+    const unusedReason = raw.unused_reason
+      ? cleanString(raw.unused_reason)
+      : null;
+    const unsafeIngredients = toStringArray(raw.unsafe_ingredients);
+    const unsafeReason = raw.unsafe_reason
+      ? cleanString(raw.unsafe_reason)
+      : null;
+    const filteredOut = toStringArray(raw.filtered_out);
+    const proteinSuggestion = raw.protein_suggestion
+      ? cleanString(raw.protein_suggestion)
+      : null;
+    const carbSuggestion = raw.carb_suggestion
+      ? cleanString(raw.carb_suggestion)
+      : null;
+    const sauceSuggestion = raw.sauce_suggestion
+      ? cleanString(raw.sauce_suggestion)
+      : null;
 
     return {
-      name: cleanString(parsed.title) || "Middagsforslag",
-      description: cleanString(parsed.description) || "",
-      haveIngredients: toStringArray(parsed.has_ingredients),
-      missingIngredients: toStringArray(parsed.missing_ingredients).slice(0, 3),
-      fullIngredients: toFullIngredients(parsed.full_ingredients),
-      steps: toStringArray(parsed.steps),
-      lowIngredientNote: cleanString(parsed.low_ingredient_note) || null,
+      name: title,
+      description,
+      haveIngredients,
+      missingIngredients,
+      fullIngredients,
+      steps,
+      lowIngredientNote,
       unusedIngredients,
-      unusedReason: unusedIngredients.length > 0 ? cleanString(parsed.unused_reason) || null : null,
+      unusedReason,
       unsafeIngredients,
-      unsafeReason: unsafeIngredients.length > 0 ? cleanString(parsed.unsafe_reason) || null : null,
-      filteredOut: toStringArray(parsed.filtered_out),
+      unsafeReason,
+      filteredOut,
       notFoodMessage: null,
-      proteinSuggestion: cleanString(parsed.protein_suggestion) || null,
-      carbSuggestion: cleanString(parsed.carb_suggestion) || null,
-      sauceSuggestion: cleanString(parsed.sauce_suggestion) || null,
+      proteinSuggestion,
+      carbSuggestion,
+      sauceSuggestion,
     };
   });
-
-function extractJson(raw: string): Record<string, unknown> {
-  const trimmed = raw.trim();
-  try {
-    return JSON.parse(trimmed) as Record<string, unknown>;
-  } catch {
-    // strip markdown fences and isolate the outermost JSON object
-    let cleaned = trimmed
-      .replace(/```json\s*/gi, "")
-      .replace(/```\s*/g, "")
-      .trim();
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
-    if (start !== -1 && end !== -1 && end > start) {
-      cleaned = cleaned.slice(start, end + 1);
-    }
-    try {
-      return JSON.parse(cleaned) as Record<string, unknown>;
-    } catch {
-      const repaired = cleaned
-        .replace(/,\s*([}\]])/g, "$1")
-        .replace(/[\u0000-\u001F\u007F]/g, " ");
-      return JSON.parse(repaired) as Record<string, unknown>;
-    }
-  }
-}
 
 function stripEmoji(value: string): string {
   // Remove emoji and pictographs silently
