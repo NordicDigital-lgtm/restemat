@@ -444,26 +444,6 @@ function RecipeCard({
           </section>
         )}
 
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isPending || limitReached}
-          onClick={onRegenerate}
-          className="h-12 w-full rounded-full text-base font-semibold"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Finner middag...
-            </>
-          ) : (
-            <>
-              Lag noe annet
-              <RefreshCw className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </Button>
-
         {(recipe.sauceSuggestion || recipe.proteinSuggestion || recipe.carbSuggestion) && (
           <section className="rounded-2xl border border-border/60 bg-muted/40 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-foreground/80">
@@ -491,6 +471,28 @@ function RecipeCard({
               )}
             </ul>
           </section>
+        )}
+
+        {hasLeftovers && (
+          <Button
+            type="button"
+            size="lg"
+            disabled={isPending || limitReached}
+            onClick={onMakeFromLeftovers}
+            className="h-14 w-full rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Finner middag...
+              </>
+            ) : (
+              <>
+                Lag noe med restene
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
         )}
       </div>
     </article>
