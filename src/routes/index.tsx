@@ -123,8 +123,10 @@ function Index() {
     if (!regenerate) {
       setSuggestedTitles([]);
     }
-    // Track original ingredient list across regenerate/leftovers cycles
-    if (!regenerate && !leftovers) {
+    // Track ingredient list across regenerate/leftovers cycles.
+    // For a fresh search or "lag noe med restene" (new ingredient set), reset the tracker
+    // so validation in the result compares against the actual current input.
+    if (!regenerate) {
       setOriginalIngredients(cleaned.split(",").map((s) => s.trim()).filter(Boolean));
     }
     setLastSubmitted(cleaned);
@@ -281,21 +283,21 @@ function Index() {
             )}
             <RecipeCard
               recipe={mergedRecipe}
-              onMakeFromLeftovers={() => submit(mergedRecipe.unusedIngredients.join(", "), false, true)}
+              onMakeSomethingElse={() => submit(lastSubmitted, true)}
               isPending={mutation.isPending}
               limitReached={limitReached}
             />
             <div className="flex flex-col gap-4">
-              {lastSubmitted && (
+              {mergedRecipe.unusedIngredients.length > 0 && (
                 <Button
                   type="button"
                   size="lg"
                   disabled={mutation.isPending || limitReached}
-                  onClick={() => submit(lastSubmitted, true)}
-                  className="h-14 rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
+                  onClick={() => submit(mergedRecipe.unusedIngredients.join(", "), false, true)}
+                  className="h-14 rounded-full bg-[#8FBF9F] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#7DAE8D] hover:shadow-xl"
                 >
-                  Finn en ny rett
-                  <RefreshCw className="ml-2 h-4 w-4" />
+                  Lag noe med restene
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -311,16 +313,16 @@ function Index() {
 
 function RecipeCard({
   recipe,
-  onMakeFromLeftovers,
+  onMakeSomethingElse,
   isPending,
   limitReached,
 }: {
   recipe: RecipeResult;
-  onMakeFromLeftovers: () => void;
+  onMakeSomethingElse: () => void;
   isPending: boolean;
   limitReached: boolean;
 }) {
-  const hasLeftovers = recipe.unusedIngredients.length > 0;
+  const showMakeSomethingElse = recipe.steps.length > 0;
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
@@ -473,12 +475,12 @@ function RecipeCard({
           </section>
         )}
 
-        {hasLeftovers && (
+        {showMakeSomethingElse && (
           <Button
             type="button"
             size="lg"
             disabled={isPending || limitReached}
-            onClick={onMakeFromLeftovers}
+            onClick={onMakeSomethingElse}
             className="h-14 w-full rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
           >
             {isPending ? (
@@ -488,8 +490,8 @@ function RecipeCard({
               </>
             ) : (
               <>
-                Lag noe med restene
-                <ArrowRight className="ml-2 h-4 w-4" />
+                Lag noe annet
+                <RefreshCw className="ml-2 h-4 w-4" />
               </>
             )}
           </Button>
