@@ -311,15 +311,16 @@ function Index() {
 
 function RecipeCard({
   recipe,
-  onRegenerate,
+  onMakeFromLeftovers,
   isPending,
   limitReached,
 }: {
   recipe: RecipeResult;
-  onRegenerate: () => void;
+  onMakeFromLeftovers: () => void;
   isPending: boolean;
   limitReached: boolean;
 }) {
+  const hasLeftovers = recipe.unusedIngredients.length > 0;
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
