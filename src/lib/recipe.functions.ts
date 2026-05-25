@@ -102,6 +102,7 @@ REGEL-REKKEFØLGE (viktigst først):
 - SAUS: Foreslå saus bare hvis oppskriften ikke inneholder saus, dressing, sjy eller pannesaus fra før.
 
 FORMAT:
+- STEG-KRAV: Hvert steg i fremgangsmåten skal være komplett og selvstendig — aldri skriv "I en stor bolle" eller "Tilsett ingrediensene" uten å spesifisere HVA som skal gjøres. Hvert steg må ha både et verb (handling) og et objekt (hva som behandles).
 - Enkle kulepunkter, ingen fet skrift som "Protein:" eller "Saus:"
 - Hvert kulepunkt er ett kort forslag, f.eks. "Kokt ris eller ovnsbakte poteter" eller "En enkel pannesaus laget av stekesjyen"
 - Maksimum 3 kulepunkter
