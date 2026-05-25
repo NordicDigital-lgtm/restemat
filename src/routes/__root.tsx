@@ -121,6 +121,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="nb">
       <head>
         <HeadContent />
+        {/* Privacy-friendly analytics by Plausible */}
+        <script async src="https://plausible.io/js/pa-YIN_Rj9NQ6kvX-doxqPIO.js" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()`,
+          }}
+        />
       </head>
       <body>
         {children}
