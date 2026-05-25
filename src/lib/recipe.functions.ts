@@ -487,40 +487,66 @@ async function generateContentWithRetry<T>(
   throw lastError;
 }
 
-async function callClaudeFallback(
+async function callLovableGateway(
+  apiKey: string,
   systemPrompt: string,
   userPrompt: string,
-  toolSchema: { name: string; description: string; parameters: Record<string, unknown> },
+  toolParameters: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY is not configured");
-  }
-
-  const anthropic = new Anthropic({ apiKey });
-  const response = await anthropic.messages.create({
-    model: "claude-3-5-haiku-20241022",
-    max_tokens: 4096,
-    system: systemPrompt,
-    tools: [
-      {
-        name: toolSchema.name,
-        description: toolSchema.description,
-        input_schema: toolSchema.parameters as Anthropic.Tool["input_schema"],
-      },
-    ],
-    tool_choice: { type: "tool", name: toolSchema.name },
-    messages: [{ role: "user", content: userPrompt }],
+  const response = await fetch(LOVABLE_AI_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Lovable-API-Key": apiKey,
+      "X-Lovable-AIG-SDK": "raw-fetch",
+    },
+    body: JSON.stringify({
+      model: LOVABLE_MODEL,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "foresla_middag",
+            description: "Returner ett middagsforslag med full oppskrift",
+            parameters: toolParameters,
+          },
+        },
+      ],
+      tool_choice: { type: "function", function: { name: "foresla_middag" } },
+    }),
   });
 
-  for (const block of response.content) {
-    if (block.type === "tool_use" && block.name === toolSchema.name) {
-      return block.input as Record<string, unknown>;
-    }
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    const err = new Error(`Lovable AI gateway ${response.status}: ${text}`) as Error & { status?: number };
+    err.status = response.status;
+    throw err;
   }
 
-  throw new Error("Claude returned no tool_use block");
+  const json = (await response.json()) as {
+    choices?: Array<{
+      message?: {
+        tool_calls?: Array<{ function?: { name?: string; arguments?: string } }>;
+      };
+    }>;
+  };
+
+  const toolCall = json.choices?.[0]?.message?.tool_calls?.[0]?.function;
+  if (!toolCall || toolCall.name !== "foresla_middag" || !toolCall.arguments) {
+    throw new Error("Lovable AI gateway returned no tool call");
+  }
+
+  try {
+    return JSON.parse(toolCall.arguments) as Record<string, unknown>;
+  } catch {
+    throw new Error("Lovable AI gateway returned invalid tool arguments JSON");
+  }
 }
+
 
 
 function createEmptyRecipeResult(
