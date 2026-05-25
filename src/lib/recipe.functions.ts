@@ -72,6 +72,15 @@ export const findRecipe = createServerFn({ method: "POST" })
 
     const systemPrompt = `Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Følg disse reglene:
 
+ABSOLUTT KRAV - KATEGORISERING: Hver eneste ingrediens som brukeren oppga (etter filtrering av ikke-mat og sikkerhet) MÅ plasseres i nøyaktig én av tre kategorier i responsen:
+- has_ingredients (brukt i retten)
+- missing_ingredients (mangler men trengs - kun for ingredienser IKKE i input)
+- unused_ingredients (i input men passer ikke retten)
+
+Det skal være UMULIG at en ingrediens fra brukerens input forsvinner fra responsen. Tell ingrediensene før og etter: hvis brukeren oppga 15 reelle matvarer, MÅ has_ingredients.length + unused_ingredients.length = 15 (missing_ingredients teller ikke siden de IKKE er i input; filtered_out og unsafe_ingredients teller heller ikke siden de er fjernet av regler 0 og 1).
+
+Hvis en ingrediens kunne passet i retten men ikke ble valgt, plasser den i unused_ingredients med forklaring i unused_reason. Aldri la en input-ingrediens forsvinne uten å stå i én av disse listene.
+
 0) FILTRERING (gjør ALLTID dette FØRST): Klassifiser hver ingrediens brukeren oppgir som enten "food" eller "not_food". Ikke-mat omfatter: rengjøringsprodukter (f.eks. Zalo, Domestos, Fairy, Jif, Klorin), hygieneprodukter (såpe, tannkrem, sjampo), emballasje, verktøy, merkevarer som ikke er mat, og fullstendig uforståelige nonsensord. Legg ALLE filtrerte elementer i feltet filtered_out (bruk brukerens egen skrivemåte). Bruk ALDRI filtrerte elementer i has_ingredients, full_ingredients, unused_ingredients eller noe annet sted i oppskriften.
 
 1) SIKKERHET (gjør ALLTID dette ETTER filtrering): Identifiser ingredienser som er giftige, helsefarlige eller krever spesialistkunnskap for trygg tilberedning. Eksempler: fugu/kuglefisk og andre fiskearter som er giftige uten ekspertbehandling, rå kassava, grønne/spirede poteter, rå rød kidneybønne, holundertbær (rå), muskatnøtt i store mengder, ville sopp uten sikker identifikasjon, plantedeler kjent for å inneholde skadelige stoffer (rabarbrablader, kirsebærsteiner, eplekjerner i mengde) osv. Slike ingredienser skal ALDRI brukes i has_ingredients, full_ingredients eller steps. Legg dem i unsafe_ingredients og sett unsafe_reason til en kort norsk forklaring (f.eks. "Fugu krever spesialistkokk – kan være dødelig uten korrekt tilberedning."). Disse skal ALDRI dukke opp i unused_ingredients.
