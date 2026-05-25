@@ -46,21 +46,11 @@ const RETRYABLE_STATUS_CODES = new Set([429, 503, 504]);
 export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<RecipeResult> => {
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    console.log("API Key exists:", !!process.env.GOOGLE_AI_API_KEY);
-    console.log("Using model: gemini-1.5-flash");
+    const apiKey = process.env.LOVABLE_API_KEY;
+    console.log("LOVABLE_API_KEY exists:", !!apiKey);
+    console.log("Using model:", LOVABLE_MODEL);
     if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 1,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 8192,
-      },
-    });
 
     // Silently strip emoji from input before processing
     const sanitizedIngredients = stripEmoji(data.ingredients).trim();
