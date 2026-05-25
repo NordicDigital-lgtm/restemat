@@ -153,7 +153,7 @@ function Index() {
         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 ring-4 ring-primary/10">
           <ChefHat className="h-7 w-7" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Restemat</h1>
+        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Restemat</h1>
         <p className="mt-3 max-w-sm text-balance font-medium text-foreground/75">
           Fra rester til middag, helt enkelt.
         </p>
