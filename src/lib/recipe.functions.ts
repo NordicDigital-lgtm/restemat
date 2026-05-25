@@ -46,19 +46,18 @@ export const findRecipe = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<RecipeResult> => {
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     console.log("API Key exists:", !!process.env.GOOGLE_AI_API_KEY);
-    console.log("Using model: gemini-2.5-flash");
+    console.log("Using model: gemini-1.5-flash");
     if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash",
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
       generationConfig: {
         temperature: 1,
         topP: 0.95,
         topK: 40,
         maxOutputTokens: 8192,
-        thinkingConfig: { thinkingBudget: 1024 },
-      } as never,
+      },
     });
 
     // Silently strip emoji from input before processing
