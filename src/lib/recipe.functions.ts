@@ -28,6 +28,8 @@ export type RecipeResult = {
   unsafeReason: string | null;
   filteredOut: string[];
   notFoodMessage: string | null;
+  serviceMessage: string | null;
+  fallback: boolean;
   proteinSuggestion: string | null;
   carbSuggestion: string | null;
   sauceSuggestion: string | null;
@@ -55,14 +57,9 @@ export const findRecipe = createServerFn({ method: "POST" })
     const sanitizedIngredients = stripEmoji(data.ingredients).trim();
     const isSingleWord = sanitizedIngredients.length > 0 && !/[,;]/.test(sanitizedIngredients) && sanitizedIngredients.split(/\s+/).length === 1;
     if (!sanitizedIngredients) {
-      return {
-        name: "", description: "", haveIngredients: [], missingIngredients: [],
-        fullIngredients: [], steps: [], lowIngredientNote: null,
-        unusedIngredients: [], unusedReason: null, unsafeIngredients: [],
-        unsafeReason: null, filteredOut: [],
+      return createEmptyRecipeResult({
         notFoodMessage: "Skriv inn det du faktisk har i kjøleskapet eller skapet.",
-        proteinSuggestion: null, carbSuggestion: null, sauceSuggestion: null,
-      };
+      });
     }
 
     const systemPrompt = `Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Følg disse reglene:
@@ -234,7 +231,10 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
       } as Parameters<typeof model.generateContent>[0]);
     } catch (error) {
       console.error("Gemini generateContent failed", error);
-      throw new Error(getRecipeGenerationErrorMessage(error));
+      return createEmptyRecipeResult({
+        serviceMessage: getRecipeGenerationErrorMessage(error),
+        fallback: true,
+      });
     }
 
     // Parse Gemini response
@@ -242,31 +242,19 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
     const functionCall = response.functionCalls()?.[0];
     
     if (!functionCall || functionCall.name !== "foresla_middag") {
-      throw new Error("AI returnerte ikke et gyldig verktøykall");
+      return createEmptyRecipeResult({
+        serviceMessage: "Kunne ikke lage oppskrift akkurat nå. Prøv igjen.",
+        fallback: true,
+      });
     }
 
     const raw = functionCall.args as Record<string, unknown>;
 
     // Handle error response
     if (raw.error === "not_food" && typeof raw.message === "string") {
-      return {
-        name: "",
-        description: "",
-        haveIngredients: [],
-        missingIngredients: [],
-        fullIngredients: [],
-        steps: [],
-        lowIngredientNote: null,
-        unusedIngredients: [],
-        unusedReason: null,
-        unsafeIngredients: [],
-        unsafeReason: null,
-        filteredOut: [],
+      return createEmptyRecipeResult({
         notFoodMessage: cleanString(raw.message),
-        proteinSuggestion: null,
-        carbSuggestion: null,
-        sauceSuggestion: null,
-      };
+      });
     }
 
     // Parse successful recipe response
@@ -312,6 +300,8 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
       unsafeReason,
       filteredOut,
       notFoodMessage: null,
+      serviceMessage: null,
+      fallback: false,
       proteinSuggestion,
       carbSuggestion,
       sauceSuggestion,
@@ -442,4 +432,30 @@ function getRecipeGenerationErrorMessage(error: unknown): string {
   }
 
   return "Kunne ikke lage oppskrift akkurat nå. Prøv igjen.";
+}
+
+function createEmptyRecipeResult(
+  overrides: Partial<RecipeResult> = {},
+): RecipeResult {
+  return {
+    name: "",
+    description: "",
+    haveIngredients: [],
+    missingIngredients: [],
+    fullIngredients: [],
+    steps: [],
+    lowIngredientNote: null,
+    unusedIngredients: [],
+    unusedReason: null,
+    unsafeIngredients: [],
+    unsafeReason: null,
+    filteredOut: [],
+    notFoodMessage: null,
+    serviceMessage: null,
+    fallback: false,
+    proteinSuggestion: null,
+    carbSuggestion: null,
+    sauceSuggestion: null,
+    ...overrides,
+  };
 }
