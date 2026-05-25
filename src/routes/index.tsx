@@ -374,12 +374,12 @@ function RecipeCard({
               ))}
             </ul>
             {recipe.unusedReason && (
-              <p className="mt-3 text-sm font-medium italic text-muted-foreground">
+              <p className="mt-4 rounded-xl border-l-4 border-muted-foreground/30 bg-muted/40 px-4 py-3 text-sm font-medium italic leading-relaxed text-muted-foreground">
                 {recipe.unusedReason}
               </p>
             )}
             {recipe.unsafeReason && (
-              <p className="mt-2 text-sm font-medium italic text-muted-foreground">
+              <p className="mt-3 rounded-xl border-l-4 border-destructive/30 bg-destructive/5 px-4 py-3 text-sm font-medium italic leading-relaxed text-muted-foreground">
                 Utelatt av sikkerhetsgrunner: {recipe.unsafeReason}
               </p>
             )}
