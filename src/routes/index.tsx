@@ -293,7 +293,7 @@ function Index() {
                   type="button"
                   size="lg"
                   disabled={mutation.isPending || limitReached}
-                  onClick={() => submit(mergedRecipe.unusedIngredients.join(", "), false, true)}
+                  onClick={() => submit(mergedRecipe.unusedIngredients.map((i) => i).join(", "), false, true)}
                   className="h-14 rounded-full bg-[#8FBF9F] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#7DAE8D] hover:shadow-xl"
                 >
                   Lag noe med restene
@@ -481,7 +481,7 @@ function RecipeCard({
             size="lg"
             disabled={isPending || limitReached}
             onClick={onMakeSomethingElse}
-            className="h-14 w-full rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
+            className="h-14 w-full rounded-full border border-orange-500 bg-white text-base font-bold text-orange-600 shadow-sm hover:bg-amber-50"
           >
             {isPending ? (
               <>
