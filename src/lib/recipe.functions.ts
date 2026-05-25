@@ -42,7 +42,7 @@ export const findRecipe = createServerFn({ method: "POST" })
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-2.0-flash",
       generationConfig: {
         temperature: 1,
         topP: 0.95,
@@ -110,126 +110,132 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
 
     const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`;
 
-    const result = await model.generateContent({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: systemPrompt + "\n\n" + userPrompt }]
-        }
-      ],
-      tools: [{
-        functionDeclarations: [{
-          name: "foresla_middag",
-          description: "Returner ett middagsforslag med full oppskrift",
-          parameters: {
-            type: "object",
-            properties: {
-              title: { type: "string", description: "Navn på retten" },
-              description: {
-                type: "string",
-                description: "Kort, varm beskrivelse (1–2 setninger)",
-              },
-              has_ingredients: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ingredienser brukeren har som brukes i retten (kun rene navn)",
-              },
-              missing_ingredients: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ingredienser brukeren mangler (maks 3). Kun rene navn.",
-              },
-              full_ingredients: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    amount: { type: "string", description: "Mengde, f.eks. 400" },
-                    unit: { type: "string", description: "Enhet, f.eks. g, dl, stk" },
-                    name: { type: "string", description: "Ingrediensnavn" },
-                  },
-                  required: ["amount", "unit", "name"],
+    let result;
+    try {
+      result = await model.generateContent({
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: systemPrompt + "\n\n" + userPrompt }]
+          }
+        ],
+        tools: [{
+          functionDeclarations: [{
+            name: "foresla_middag",
+            description: "Returner ett middagsforslag med full oppskrift",
+            parameters: {
+              type: "object",
+              properties: {
+                title: { type: "string", description: "Navn på retten" },
+                description: {
+                  type: "string",
+                  description: "Kort, varm beskrivelse (1–2 setninger)",
                 },
-                description: "Full ingrediensliste med mengder og enheter",
+                has_ingredients: {
+                  type: "array",
+                  items: { type: "string" },
+                  description:
+                    "Ingredienser brukeren har som brukes i retten (kun rene navn)",
+                },
+                missing_ingredients: {
+                  type: "array",
+                  items: { type: "string" },
+                  description:
+                    "Ingredienser brukeren mangler (maks 3). Kun rene navn.",
+                },
+                full_ingredients: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      amount: { type: "string", description: "Mengde, f.eks. 400" },
+                      unit: { type: "string", description: "Enhet, f.eks. g, dl, stk" },
+                      name: { type: "string", description: "Ingrediensnavn" },
+                    },
+                    required: ["amount", "unit", "name"],
+                  },
+                  description: "Full ingrediensliste med mengder og enheter",
+                },
+                steps: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Fremgangsmåte i enkle steg",
+                },
+                low_ingredient_note: {
+                  type: "string",
+                  description:
+                    'Hvis brukeren har svært få ingredienser (1–2), inkluder en kort melding som "Du har lite å jobbe med — her er noe enkelt du kan lage med bare et par ekstra ting." Ellers null.',
+                },
+                unused_ingredients: {
+                  type: "array",
+                  items: { type: "string" },
+                  description:
+                    "Ingredienser brukeren har som ikke passer til denne retten. Kun rene navn akkurat slik brukeren skrev dem, ingen tilleggstekst.",
+                },
+                unused_reason: {
+                  type: "string",
+                  description:
+                    "Én kort, vennlig norsk setning som forklarer hvorfor unused_ingredients ikke brukes. Utelat hvis ingen unused_ingredients.",
+                },
+                unsafe_ingredients: {
+                  type: "array",
+                  items: { type: "string" },
+                  description:
+                    "Ingredienser som er giftige/helsefarlige eller krever spesialistkunnskap",
+                },
+                unsafe_reason: {
+                  type: "string",
+                  description:
+                    "Kort forklaring på hvorfor unsafe_ingredients ikke brukes. Utelat hvis ingen unsafe_ingredients.",
+                },
+                filtered_out: {
+                  type: "array",
+                  items: { type: "string" },
+                  description:
+                    "Ikke-matvarer som ble filtrert bort (rengjøring, hygieneartikler, nonsens). Bruk brukerens egen skrivemåte.",
+                },
+                error: {
+                  type: "string",
+                  description:
+                    'Feilkode hvis brukerens input er ugyldig. Eneste tillatte verdi er "not_food".',
+                },
+                message: {
+                  type: "string",
+                  description:
+                    'Kun brukt ved error="not_food". Gi en vennlig melding som "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet."',
+                },
+                protein_suggestion: {
+                  type: "string",
+                  description:
+                    "Ett kort forslag til protein (f.eks. 'Kyllingfilet eller laks') bare hvis retten mangler protein og brukeren ikke allerede har protein. Ellers null.",
+                },
+                carb_suggestion: {
+                  type: "string",
+                  description:
+                    "Ett kort forslag til karbohydrat (f.eks. 'Kokt ris eller ovnsbakte poteter') bare hvis retten mangler karbohydrat. Ellers null.",
+                },
+                sauce_suggestion: {
+                  type: "string",
+                  description:
+                    "Ett kort forslag til saus (f.eks. 'En enkel pannesaus laget av stekesjyen') bare hvis retten mangler saus. Ellers null.",
+                },
               },
-              steps: {
-                type: "array",
-                items: { type: "string" },
-                description: "Fremgangsmåte i enkle steg",
-              },
-              low_ingredient_note: {
-                type: "string",
-                description:
-                  'Hvis brukeren har svært få ingredienser (1–2), inkluder en kort melding som "Du har lite å jobbe med — her er noe enkelt du kan lage med bare et par ekstra ting." Ellers null.',
-              },
-              unused_ingredients: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ingredienser brukeren har som ikke passer til denne retten. Kun rene navn akkurat slik brukeren skrev dem, ingen tilleggstekst.",
-              },
-              unused_reason: {
-                type: "string",
-                description:
-                  "Én kort, vennlig norsk setning som forklarer hvorfor unused_ingredients ikke brukes. Utelat hvis ingen unused_ingredients.",
-              },
-              unsafe_ingredients: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ingredienser som er giftige/helsefarlige eller krever spesialistkunnskap",
-              },
-              unsafe_reason: {
-                type: "string",
-                description:
-                  "Kort forklaring på hvorfor unsafe_ingredients ikke brukes. Utelat hvis ingen unsafe_ingredients.",
-              },
-              filtered_out: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ikke-matvarer som ble filtrert bort (rengjøring, hygieneartikler, nonsens). Bruk brukerens egen skrivemåte.",
-              },
-              error: {
-                type: "string",
-                description:
-                  'Feilkode hvis brukerens input er ugyldig. Eneste tillatte verdi er "not_food".',
-              },
-              message: {
-                type: "string",
-                description:
-                  'Kun brukt ved error="not_food". Gi en vennlig melding som "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet."',
-              },
-              protein_suggestion: {
-                type: "string",
-                description:
-                  "Ett kort forslag til protein (f.eks. 'Kyllingfilet eller laks') bare hvis retten mangler protein og brukeren ikke allerede har protein. Ellers null.",
-              },
-              carb_suggestion: {
-                type: "string",
-                description:
-                  "Ett kort forslag til karbohydrat (f.eks. 'Kokt ris eller ovnsbakte poteter') bare hvis retten mangler karbohydrat. Ellers null.",
-              },
-              sauce_suggestion: {
-                type: "string",
-                description:
-                  "Ett kort forslag til saus (f.eks. 'En enkel pannesaus laget av stekesjyen') bare hvis retten mangler saus. Ellers null.",
-              },
+              required: [
+                "title",
+                "description",
+                "has_ingredients",
+                "missing_ingredients",
+                "full_ingredients",
+                "steps",
+              ],
             },
-            required: [
-              "title",
-              "description",
-              "has_ingredients",
-              "missing_ingredients",
-              "full_ingredients",
-              "steps",
-            ],
-          },
-        }]
-      }],
-    } as Parameters<typeof model.generateContent>[0]);
+          }]
+        }],
+      } as Parameters<typeof model.generateContent>[0]);
+    } catch (error) {
+      console.error("Gemini generateContent failed", error);
+      throw new Error(getRecipeGenerationErrorMessage(error));
+    }
 
     // Parse Gemini response
     const response = result.response;
@@ -414,4 +420,26 @@ function toFullIngredients(value: unknown): FullIngredient[] {
     }
   }
   return out;
+}
+
+function getRecipeGenerationErrorMessage(error: unknown): string {
+  const providerError = error as { status?: number; message?: string };
+
+  if (providerError?.status === 404) {
+    return "AI-modellen er midlertidig utilgjengelig. Prøv igjen om litt.";
+  }
+
+  if (providerError?.status === 429) {
+    return "Tjenesten er midlertidig opptatt akkurat nå. Prøv igjen om litt.";
+  }
+
+  if (providerError?.status === 401 || providerError?.status === 403) {
+    return "AI-tjenesten er ikke riktig konfigurert akkurat nå.";
+  }
+
+  if (providerError?.message?.includes("quota")) {
+    return "Tjenesten er midlertidig opptatt akkurat nå. Prøv igjen om litt.";
+  }
+
+  return "Kunne ikke lage oppskrift akkurat nå. Prøv igjen.";
 }
