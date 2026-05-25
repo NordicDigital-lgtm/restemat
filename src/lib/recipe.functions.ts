@@ -512,6 +512,42 @@ async function generateContentWithRetry<T>(
   throw lastError;
 }
 
+async function callClaudeFallback(
+  systemPrompt: string,
+  userPrompt: string,
+  toolSchema: { name: string; description: string; parameters: Record<string, unknown> },
+): Promise<Record<string, unknown>> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error("ANTHROPIC_API_KEY is not configured");
+  }
+
+  const anthropic = new Anthropic({ apiKey });
+  const response = await anthropic.messages.create({
+    model: "claude-3-5-haiku-20241022",
+    max_tokens: 4096,
+    system: systemPrompt,
+    tools: [
+      {
+        name: toolSchema.name,
+        description: toolSchema.description,
+        input_schema: toolSchema.parameters as Anthropic.Tool["input_schema"],
+      },
+    ],
+    tool_choice: { type: "tool", name: toolSchema.name },
+    messages: [{ role: "user", content: userPrompt }],
+  });
+
+  for (const block of response.content) {
+    if (block.type === "tool_use" && block.name === toolSchema.name) {
+      return block.input as Record<string, unknown>;
+    }
+  }
+
+  throw new Error("Claude returned no tool_use block");
+}
+
+
 function createEmptyRecipeResult(
   overrides: Partial<RecipeResult> = {},
 ): RecipeResult {
