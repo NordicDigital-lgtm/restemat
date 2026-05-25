@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import Anthropic from "@anthropic-ai/sdk";
+
 
 const InputSchema = z.object({
   ingredients: z.string().min(1).max(2000),
@@ -234,32 +236,42 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
       }],
     } as Parameters<typeof model.generateContent>[0];
 
-    let result;
+    const toolSchema = (requestPayload as unknown as { tools: Array<{ functionDeclarations: Array<{ name: string; description: string; parameters: Record<string, unknown> }> }> }).tools[0].functionDeclarations[0];
+
+    let rawArgs: Record<string, unknown> | null = null;
     try {
-      result = await generateContentWithRetry(
+      const result = await generateContentWithRetry(
         () => model.generateContent(requestPayload),
         MAX_GENERATION_ATTEMPTS,
       );
-    } catch (error) {
-      console.error("Gemini generateContent failed", error);
-      return createEmptyRecipeResult({
-        serviceMessage: getRecipeGenerationErrorMessage(error),
-        fallback: true,
-      });
+      const functionCall = result.response.functionCalls()?.[0];
+      if (functionCall && functionCall.name === "foresla_middag") {
+        rawArgs = functionCall.args as Record<string, unknown>;
+      } else {
+        throw new Error("Gemini returned no tool call");
+      }
+    } catch (geminiError) {
+      console.error("Gemini generateContent failed, trying Claude fallback", geminiError);
+      try {
+        rawArgs = await callClaudeFallback(systemPrompt, userPrompt, toolSchema);
+      } catch (claudeError) {
+        console.error("Claude fallback also failed", claudeError);
+        return createEmptyRecipeResult({
+          serviceMessage: getRecipeGenerationErrorMessage(geminiError),
+          fallback: true,
+        });
+      }
     }
 
-    // Parse Gemini response
-    const response = result.response;
-    const functionCall = response.functionCalls()?.[0];
-    
-    if (!functionCall || functionCall.name !== "foresla_middag") {
+    if (!rawArgs) {
       return createEmptyRecipeResult({
         serviceMessage: "Kunne ikke lage oppskrift akkurat nå. Prøv igjen.",
         fallback: true,
       });
     }
 
-    const raw = functionCall.args as Record<string, unknown>;
+    const raw = rawArgs;
+
 
     // Handle error response
     if (raw.error === "not_food" && typeof raw.message === "string") {
@@ -499,6 +511,42 @@ async function generateContentWithRetry<T>(
 
   throw lastError;
 }
+
+async function callClaudeFallback(
+  systemPrompt: string,
+  userPrompt: string,
+  toolSchema: { name: string; description: string; parameters: Record<string, unknown> },
+): Promise<Record<string, unknown>> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error("ANTHROPIC_API_KEY is not configured");
+  }
+
+  const anthropic = new Anthropic({ apiKey });
+  const response = await anthropic.messages.create({
+    model: "claude-3-5-haiku-20241022",
+    max_tokens: 4096,
+    system: systemPrompt,
+    tools: [
+      {
+        name: toolSchema.name,
+        description: toolSchema.description,
+        input_schema: toolSchema.parameters as Anthropic.Tool["input_schema"],
+      },
+    ],
+    tool_choice: { type: "tool", name: toolSchema.name },
+    messages: [{ role: "user", content: userPrompt }],
+  });
+
+  for (const block of response.content) {
+    if (block.type === "tool_use" && block.name === toolSchema.name) {
+      return block.input as Record<string, unknown>;
+    }
+  }
+
+  throw new Error("Claude returned no tool_use block");
+}
+
 
 function createEmptyRecipeResult(
   overrides: Partial<RecipeResult> = {},
