@@ -21,7 +21,7 @@ function Oppgrader() {
         </div>
         <h1 className="text-3xl font-semibold sm:text-4xl">Ubegrenset Restemat</h1>
         <p className="mt-3 max-w-sm text-balance font-medium text-muted-foreground">
-          Slipp å kaste mat. Lag middag av det du har, hver dag.
+          Lag middag av det du har, hver dag.
         </p>
       </header>
 
