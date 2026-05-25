@@ -127,6 +127,9 @@ function Index() {
       { ingredients: cleaned, regenerate, excludeTitles: historyForCall },
       {
         onSuccess: (data) => {
+          if (data?.fallback || data?.notFoodMessage) {
+            return;
+          }
           if (data?.name) {
             setSuggestedTitles((prev) => (prev.includes(data.name) ? prev : [...prev, data.name]));
           }
@@ -230,7 +233,13 @@ function Index() {
         </div>
       )}
 
-      {mutation.data && !mutation.data.notFoodMessage && (
+      {mutation.data?.serviceMessage && (
+        <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
+          {mutation.data.serviceMessage}
+        </div>
+      )}
+
+      {mutation.data && !mutation.data.notFoodMessage && !mutation.data.serviceMessage && (
         <>
           {mutation.data.filteredOut.length > 0 && (
             <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm font-medium text-muted-foreground">
