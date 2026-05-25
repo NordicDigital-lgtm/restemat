@@ -229,7 +229,7 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
           },
         }]
       }],
-    });
+    } as Parameters<typeof model.generateContent>[0]);
 
     // Parse Gemini response
     const response = result.response;
