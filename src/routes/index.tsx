@@ -475,12 +475,12 @@ function RecipeCard({
           </section>
         )}
 
-        {hasLeftovers && (
+        {showMakeSomethingElse && (
           <Button
             type="button"
             size="lg"
             disabled={isPending || limitReached}
-            onClick={onMakeFromLeftovers}
+            onClick={onMakeSomethingElse}
             className="h-14 w-full rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
           >
             {isPending ? (
@@ -490,8 +490,8 @@ function RecipeCard({
               </>
             ) : (
               <>
-                Lag noe med restene
-                <ArrowRight className="ml-2 h-4 w-4" />
+                Lag noe annet
+                <RefreshCw className="ml-2 h-4 w-4" />
               </>
             )}
           </Button>
