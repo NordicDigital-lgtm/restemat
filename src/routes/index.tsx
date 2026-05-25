@@ -51,6 +51,7 @@ function writeUsage(count: number) {
 
 function Index() {
   const [ingredients, setIngredients] = useState("");
+  const [originalIngredients, setOriginalIngredients] = useState<string[]>([]);
   const [lastSubmitted, setLastSubmitted] = useState("");
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [usage, setUsage] = useState(0);
