@@ -150,18 +150,18 @@ function Index() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-8 px-5 py-10 sm:py-16">
       <header className="flex flex-col items-center text-center">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 ring-4 ring-primary/10">
           <ChefHat className="h-7 w-7" />
         </div>
-        <h1 className="text-4xl font-semibold sm:text-5xl">Restemat</h1>
-        <p className="mt-3 max-w-sm text-balance text-muted-foreground">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Restemat</h1>
+        <p className="mt-3 max-w-sm text-balance font-medium text-foreground/75">
           Fra rester til middag, helt enkelt.
         </p>
       </header>
 
       <form
         onSubmit={onSubmit}
-        className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-card p-4 shadow-sm sm:p-5"
+        className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-card p-4 shadow-md sm:p-5"
       >
         <Textarea
           value={ingredients}
@@ -225,7 +225,7 @@ function Index() {
       {mutation.data && !mutation.data.notFoodMessage && (
         <>
           {mutation.data.filteredOut.length > 0 && (
-            <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-border bg-muted/60 p-4 text-sm font-medium text-muted-foreground">
               Vi fjernet følgende fra listen din siden det ikke er matvarer: <span className="font-medium text-foreground">{mutation.data.filteredOut.join(", ")}</span>. Oppskriften er basert på resten.
             </div>
           )}
@@ -235,14 +235,14 @@ function Index() {
             </div>
           )}
           <RecipeCard recipe={mutation.data} />
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {mutation.data.unusedIngredients.length > 0 && (
               <Button
                 type="button"
                 size="lg"
                 disabled={mutation.isPending || limitReached}
                 onClick={() => submit(mutation.data!.unusedIngredients.join(", "))}
-                className="h-12 rounded-full bg-[#7A9E7E] text-base font-bold text-white hover:bg-[#6A8E6E]"
+                className="h-14 rounded-full bg-[#5F8364] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#4F7355] hover:shadow-xl"
               >
                 Lag noe med restene
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -254,7 +254,7 @@ function Index() {
                 size="lg"
                 disabled={mutation.isPending || limitReached}
                 onClick={() => submit(lastSubmitted, true)}
-                className="h-12 rounded-full bg-[#C4785A] text-base font-bold text-white hover:bg-[#B06A4E]"
+                className="h-14 rounded-full bg-[#C4785A] text-base font-bold text-white shadow-lg ring-1 ring-black/5 hover:bg-[#B06A4E] hover:shadow-xl"
               >
                 Finn en ny rett
                 <RefreshCw className="ml-2 h-4 w-4" />
@@ -274,14 +274,14 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
-        <h2 className="text-2xl font-semibold sm:text-3xl">{recipe.name}</h2>
-        <p className="mt-2 text-muted-foreground">{recipe.description}</p>
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{recipe.name}</h2>
+        <p className="mt-2 font-medium text-muted-foreground">{recipe.description}</p>
       </div>
 
-      <div className="grid gap-5 p-6 sm:p-7">
+      <div className="grid gap-6 p-6 sm:p-7">
         {recipe.haveIngredients.length > 0 && (
           <section>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-success">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-success">
               <Check className="h-4 w-4" />
               Du har
             </h3>
@@ -289,7 +289,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
               {recipe.haveIngredients.map((item) => (
                 <li
                   key={item}
-                  className="rounded-full bg-success/12 px-3 py-1.5 text-sm font-medium text-success"
+                  className="rounded-full bg-success/12 px-3 py-2 text-sm font-medium text-success"
                   style={{ backgroundColor: "color-mix(in oklab, var(--success) 14%, transparent)" }}
                 >
                   {item}
@@ -301,7 +301,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
 
         {(recipe.unusedIngredients.length > 0 || recipe.unsafeIngredients.length > 0) && (
           <section>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
               <Archive className="h-4 w-4" />
               Passer ikke til denne retten
             </h3>
@@ -309,7 +309,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
               {recipe.unusedIngredients.map((item) => (
                 <li
                   key={`u-${item}`}
-                  className="rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground"
+                  className="rounded-full bg-muted px-3 py-2 text-sm font-medium text-muted-foreground"
                 >
                   {item}
                 </li>
@@ -317,19 +317,19 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
               {recipe.unsafeIngredients.map((item) => (
                 <li
                   key={`s-${item}`}
-                  className="rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground"
+                  className="rounded-full bg-muted px-3 py-2 text-sm font-medium text-muted-foreground"
                 >
                   {item}
                 </li>
               ))}
             </ul>
             {recipe.unusedReason && (
-              <p className="mt-3 text-sm italic text-muted-foreground">
+              <p className="mt-3 text-sm font-medium italic text-muted-foreground">
                 {recipe.unusedReason}
               </p>
             )}
             {recipe.unsafeReason && (
-              <p className="mt-2 text-sm italic text-muted-foreground">
+              <p className="mt-2 text-sm font-medium italic text-muted-foreground">
                 Utelatt av sikkerhetsgrunner: {recipe.unsafeReason}
               </p>
             )}
@@ -338,7 +338,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
 
         {recipe.missingIngredients.length > 0 && (
           <section>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-warning">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-warning">
               <ShoppingBasket className="h-4 w-4" />
               Du mangler
             </h3>
@@ -346,7 +346,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
               {recipe.missingIngredients.map((item) => (
                 <li
                   key={item}
-                  className="rounded-full px-3 py-1.5 text-sm font-medium text-warning"
+                  className="rounded-full px-3 py-2 text-sm font-medium text-warning"
                   style={{ backgroundColor: "color-mix(in oklab, var(--warning) 18%, transparent)" }}
                 >
                   {item}
@@ -358,7 +358,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
 
         {recipe.fullIngredients.length > 0 && (
           <section>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground/80">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-foreground/80">
               <UtensilsCrossed className="h-4 w-4" />
               Ingredienser
             </h3>
@@ -368,7 +368,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
                   <span className="min-w-20 font-medium text-foreground">
                     {[ing.amount, ing.unit].filter(Boolean).join(" ")}
                   </span>
-                  <span className="text-muted-foreground">{ing.name}</span>
+                  <span className="font-medium text-muted-foreground">{ing.name}</span>
                 </li>
               ))}
             </ul>
@@ -377,7 +377,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
 
         {recipe.steps.length > 0 && (
           <section>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground/80">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-foreground/80">
               <ListOrdered className="h-4 w-4" />
               Fremgangsmåte
             </h3>
@@ -387,7 +387,7 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                     {i + 1}
                   </span>
-                  <p className="pt-0.5 text-sm leading-relaxed text-foreground/90">{step}</p>
+                  <p className="pt-0.5 text-sm font-medium leading-relaxed text-foreground/90">{step}</p>
                 </li>
               ))}
             </ol>
@@ -396,26 +396,26 @@ function RecipeCard({ recipe }: { recipe: RecipeResult }) {
 
         {(recipe.sauceSuggestion || recipe.proteinSuggestion || recipe.carbSuggestion) && (
           <section className="rounded-2xl border border-border/60 bg-muted/40 p-5">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground/80">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-foreground/80">
               <Lightbulb className="h-4 w-4" />
               Kan passe fint med:
             </h3>
-            <ul className="flex flex-col gap-2 text-sm text-foreground/90">
+            <ul className="flex flex-col gap-2 text-sm font-medium text-foreground/90">
               {recipe.proteinSuggestion && (
                 <li className="flex gap-2">
-                  <span className="text-muted-foreground">•</span>
+                  <span className="font-medium text-muted-foreground">•</span>
                   <span>{recipe.proteinSuggestion}</span>
                 </li>
               )}
               {recipe.carbSuggestion && (
                 <li className="flex gap-2">
-                  <span className="text-muted-foreground">•</span>
+                  <span className="font-medium text-muted-foreground">•</span>
                   <span>{recipe.carbSuggestion}</span>
                 </li>
               )}
               {recipe.sauceSuggestion && (
                 <li className="flex gap-2">
-                  <span className="text-muted-foreground">•</span>
+                  <span className="font-medium text-muted-foreground">•</span>
                   <span>{recipe.sauceSuggestion}</span>
                 </li>
               )}
