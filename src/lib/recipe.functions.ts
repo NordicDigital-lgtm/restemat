@@ -236,7 +236,7 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
       }],
     } as Parameters<typeof model.generateContent>[0];
 
-    const toolSchema = (requestPayload.tools as Array<{ functionDeclarations: Array<{ name: string; description: string; parameters: Record<string, unknown> }> }>)[0].functionDeclarations[0];
+    const toolSchema = (requestPayload as { tools: Array<{ functionDeclarations: Array<{ name: string; description: string; parameters: Record<string, unknown> }> }> }).tools[0].functionDeclarations[0];
 
     let rawArgs: Record<string, unknown> | null = null;
     try {
