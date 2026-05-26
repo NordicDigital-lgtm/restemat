@@ -26,6 +26,11 @@ function isDevMode(): boolean {
   return window.localStorage.getItem("devMode") === "1";
 }
 
+function isPro(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem("isPro") === "1";
+}
+
 function readUsage(): number {
   if (typeof window === "undefined") return 0;
   if (isDevMode()) return 0;
@@ -87,7 +92,7 @@ function Index() {
     return () => clearTimeout(t);
   }, [mounted]);
 
-  const limitReached = LIMIT_DISABLED ? false : !isDev && usage >= DAILY_LIMIT;
+  const limitReached = LIMIT_DISABLED ? false : !isDev && !isPro() && usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
     mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
@@ -113,7 +118,7 @@ function Index() {
       return;
     }
     setClientNotice(null);
-    if (!LIMIT_DISABLED && !isDev && readUsage() >= DAILY_LIMIT) {
+    if (!LIMIT_DISABLED && !isDev && !isPro() && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
@@ -219,7 +224,7 @@ function Index() {
         </div>
       )}
 
-      {mounted && !isDev && !LIMIT_DISABLED && (
+      {mounted && !isDev && !isPro() && !LIMIT_DISABLED && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
