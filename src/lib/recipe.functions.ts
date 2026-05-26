@@ -158,7 +158,7 @@ FORMAT:
 
 Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestion, carb_suggestion og sauce_suggestion til null/tom.`;
 
-    const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps), og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`;
+    const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""} Returner tittel, beskrivelse, hvilke ingredienser jeg har (has_ingredients), hva jeg mangler (missing_ingredients, maks 3), full ingrediensliste med mengder (full_ingredients), fremgangsmåte (steps) — hvert steg må være minst 15 ord og beskrive hvordan handlingen utføres, ikke bare hva som gjøres, og hvilke av mine ingredienser som ikke passer til denne retten (unused_ingredients) med en kort forklaring (unused_reason).`;
 
     const toolParameters = {
       type: "object",
@@ -196,7 +196,8 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
         steps: {
           type: "array",
           items: { type: "string" },
-          description: "Fremgangsmåte i enkle steg",
+          description:
+            "Fremgangsmåte i fullstendige, beskrivende steg. KRAV: Hvert steg MÅ være minimum 15 ord. Hvert steg MÅ beskrive både handlingen, metoden og resultatet i én naturlig setning. Korte fragmenter som 'Skjær løken', 'Bland sammen smør' eller 'Vask tomatene' er IKKE tillatt — slike handlinger må slås sammen med tilstøtende steg slik at hvert steg er en komplett instruksjon.",
         },
         low_ingredient_note: {
           type: "string",
