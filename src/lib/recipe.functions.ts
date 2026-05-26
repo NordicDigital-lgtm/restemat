@@ -63,7 +63,25 @@ export const findRecipe = createServerFn({ method: "POST" })
 
     const systemPrompt = `Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Følg disse reglene:
 
+INGREDIENS-NAVNGIVNING (ALLER HØYESTE PRIORITET):
+Alle ingrediensnavn returneres som rene, enkle ord uten tillegg.
+Korrekt formatering:
+- blåbær
+- soyasaus
+- rosenkål
+- egg
+Ingrediensnavn inneholder ALDRI kvalifikatorer, engelske ord, suffiks, prefikser eller forklaringer (ikke "blåbær village", ikke "fresh egg", ikke "egg (stort)").
+I has_ingredients, missing_ingredients og unused_ingredients: Bruk KUN det faktiske ingrediensnavnet.
+
+SKRIVEFEIL-HÅNDTERING:
+Hvis brukeren skriver en åpenbar skrivefeil (f.eks. "egf" i stedet for "egg", "kyling" i stedet for "kylling"):
+- Rett opp til korrekt norsk stavemåte
+- Returner det RETTEDE navnet i has_ingredients (f.eks. "egg", IKKE "egf")
+- Bruk det rettede navnet konsekvent i oppskriften og fremgangsmåten
+Eksempel: Input "ris, kylling, egf" → has_ingredients: ["ris", "kylling", "egg"]
+
 STEG-REGLER (HØY PRIORITET):
+
 - Hvert steg minimum 10-15 ord
 - Grupper relaterte handlinger (ikke splitt 'Bland X' og 'Rør om' til to steg)
 - Inkluder HVORDAN og HVORFOR, ikke bare HVA
