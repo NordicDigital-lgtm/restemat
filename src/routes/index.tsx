@@ -560,26 +560,26 @@ function RecipeCard({
           </section>
         )}
 
-        {(recipe.sauceSuggestion || recipe.proteinSuggestion || recipe.carbSuggestion) && (
+        {(!!recipe.sauceSuggestion || !!recipe.proteinSuggestion || !!recipe.carbSuggestion) && (
           <section className="rounded-2xl border border-border/60 bg-muted/40 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-foreground/80">
               <Lightbulb className="h-4 w-4" />
               Kan passe fint med:
             </h3>
             <ul className="flex flex-col gap-2 text-sm font-medium text-foreground/90">
-              {recipe.proteinSuggestion && (
+              {recipe.proteinSuggestion && recipe.proteinSuggestion !== "null" && (
                 <li className="flex gap-2">
                   <span className="font-medium text-muted-foreground">•</span>
                   <span>{recipe.proteinSuggestion}</span>
                 </li>
               )}
-              {recipe.carbSuggestion && (
+              {recipe.carbSuggestion && recipe.carbSuggestion !== "null" && (
                 <li className="flex gap-2">
                   <span className="font-medium text-muted-foreground">•</span>
                   <span>{recipe.carbSuggestion}</span>
                 </li>
               )}
-              {recipe.sauceSuggestion && (
+              {recipe.sauceSuggestion && recipe.sauceSuggestion !== "null" && (
                 <li className="flex gap-2">
                   <span className="font-medium text-muted-foreground">•</span>
                   <span>{recipe.sauceSuggestion}</span>
