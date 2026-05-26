@@ -92,7 +92,7 @@ function Index() {
     return () => clearTimeout(t);
   }, [mounted]);
 
-  const limitReached = LIMIT_DISABLED ? false : !isDev && usage >= DAILY_LIMIT;
+  const limitReached = LIMIT_DISABLED ? false : !isDev && !isPro() && usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
     mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
