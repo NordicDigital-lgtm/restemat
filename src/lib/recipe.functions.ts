@@ -267,6 +267,21 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
           description:
             "Ett kort forslag til saus (f.eks. 'En enkel pannesaus laget av stekesjyen') bare hvis retten mangler saus. Ellers null.",
         },
+        time_estimate_min: {
+          type: "number",
+          description:
+            "Estimert total tilberedningstid i minutter (kun et heltall, f.eks. 25). Ta med både forberedelse og koking.",
+        },
+        worst_fitting_have: {
+          type: "string",
+          description:
+            "Navnet på den ENE ingrediensen fra has_ingredients som passer dårligst med resten av retten — den som lettest kunne vært utelatt. Returner kun det rene ingrediensnavnet. Hvis alt passer perfekt, returner tom streng.",
+        },
+        best_fitting_unused: {
+          type: "string",
+          description:
+            "Navnet på den ENE ingrediensen fra unused_ingredients som har høyest sannsynlighet for å passe inn i en variant av retten. Returner kun det rene ingrediensnavnet. Hvis unused_ingredients er tom, returner tom streng.",
+        },
       },
       required: [
         "title",
