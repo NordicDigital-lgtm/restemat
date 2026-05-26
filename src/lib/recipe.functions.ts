@@ -134,41 +134,23 @@ REGEL-REKKEFØLGE (viktigst først):
 - KARBOHYDRAT: ALLTID foreslå karbohydrat når oppskriften ikke inneholder noe karbohydrat — inkludert curry, gryterett, og sausbaserte retter der ris, naan eller flatbrød ville vært naturlig. Ikke hopp over denne bare fordi retten har en saus.
 - SAUS: Foreslå saus bare hvis oppskriften ikke inneholder saus, dressing, sjy eller pannesaus fra før.
 
-STEG-KVALITET - ABSOLUTT KRAV:
+STEG-REGLER (HØYESTE PRIORITET):
+- Hvert steg 15-20 ord - kortere enn 15 er for lite, lengre enn 20 blir ordrik fyllmasse
+- Skriv på naturlig norsk bokmål - ALDRI oversett fra engelsk
+- Inkluder handling, metode og resultat i én setning
+- Bruk ALDRI olivenolje til steking - bruk "smør", "nøytral olje" eller "rapsolje"
+- Unngå unaturlige uttrykk som "avgir god duft", "avgir smak" - skriv direkte hva som skjer
 
-Hvert enkelt steg i fremgangsmåten MÅ være minimum 15 ord og inneholde:
+GODE EKSEMPLER (følg denne stilen):
+✓ "Skrell og skjær potetene i terninger på ca 2 cm, skyll dem under kaldt vann og la dem renne av"
+✓ "Stek kyllingen i smør på middels varme til den har fått fin farge på begge sider og er gjennomstekt"
+✓ "Finhakk hvitløk og løk og stek dem i smør til løken er blank og myk uten å få farge"
 
-- Et verb (handling): "Skrell", "Bland", "Stek", "Kok"
-
-- Objektet som behandles: "løken", "ingrediensene", "kyllingen"
-
-- Metoden: "i en stor kjele", "med en teskje", "på middels varme"
-
-- Resultatet eller tidsrammen: "til det er gyllen", "i 10 minutter", "til det er mørt"
-
-Grupper relaterte handlinger sammen. Ikke splitt "Bland X" og "Rør om" til to separate steg.
-
-GODE EKSEMPLER (følg dette mønsteret):
-
-✓ "Skrell og hakk løken fint før du steker den i olje på middels varme til den er gyllen og myk"
-
-✓ "Bland yoghurt, honning og sitronsaft i en liten bolle til du har en glatt og kremet dressing"
-
-✓ "Skjær tomaten i tynne skiver og legg dem forsiktig i lag på tallerkenen sammen med mozzarella"
-
-ALDRI skriv korte fragmenter som:
-
-✗ "Skjær tomat"
-
-✗ "Tilsett linser"
-
-✗ "Rør sammen miso"
-
-✗ "Bland sammen soyasaus"
-
-✗ "Finhakk ansjos"
-
-Hvis en handling ville bli under 10 ord alene, kombiner den med forrige eller neste steg.
+DÅRLIGE EKSEMPLER (aldri skriv slik):
+✗ "Bland sammen soyasaus" (for kort, mangler kontekst)
+✗ "Stek kyllingen i olivenolje" (feil olje)
+✗ "til den avgir en god duft" (unaturlig norsk)
+✗ "Kok opp en stor med rikelig med saltet vann" (gebrokken grammatikk)
 
 FORMAT:
 - Enkle kulepunkter, ingen fet skrift som "Protein:" eller "Saus:"
