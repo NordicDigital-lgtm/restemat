@@ -589,6 +589,65 @@ function RecipeCard({
           </section>
         )}
 
+        {showRefine && (
+          <section>
+            <p className="mb-3 text-sm font-medium text-foreground/80">Vil du justere?</p>
+            <div className="grid grid-cols-2 gap-2">
+              {worstHave ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => onRefine(`Lag en variant av denne retten uten ${worstHave}.`, worstHave)}
+                  className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+                >
+                  <span className="block w-full">Lag uten {worstHave}</span>
+                </Button>
+              ) : (
+                <span />
+              )}
+              {bestUnused ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => onRefine(`Lag en variant av denne retten som inkluderer ${bestUnused}.`)}
+                  className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+                >
+                  <span className="block w-full">Lag med {bestUnused}</span>
+                </Button>
+              ) : (
+                <span />
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isPending || limitReached}
+                onClick={() => onRefine("Foreslå en enklere rett med maks 4–5 ingredienser totalt og færre trinn.")}
+                className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+              >
+                <span className="block w-full">Noe enklere</span>
+                <span className="block w-full text-[10px] font-normal text-muted-foreground">· færre ingredienser</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isPending || limitReached}
+                onClick={() => onRefine("Foreslå en rett som kan lages på under 20 minutter.")}
+                className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+              >
+                <span className="block w-full">Noe raskere</span>
+                <span className="block w-full text-[10px] font-normal text-muted-foreground">· under 20 min</span>
+              </Button>
+            </div>
+          </section>
+        )}
+
+
         {showMakeSomethingElse && (
           <Button
             type="button"
