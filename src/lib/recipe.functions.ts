@@ -336,7 +336,8 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
     const haveIngredients = toStringArray(raw.has_ingredients).map(stripSuffix);
     const missingIngredients = toStringArray(raw.missing_ingredients).map(stripSuffix);
     const fullIngredients = toFullIngredients(raw.full_ingredients).map((fi) => ({
-      ...fi,
+      amount: fi.amount.replace(/Header.*$/i, "").trim(),
+      unit: fi.unit.replace(/Header.*$/i, "").trim(),
       name: stripSuffix(fi.name),
     }));
     const steps = toStringArray(raw.steps);
