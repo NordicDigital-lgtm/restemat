@@ -33,7 +33,7 @@ function Betalt() {
       </div>
       <h1 className="text-3xl font-semibold sm:text-4xl">Velkommen til Restemat</h1>
       <p className="max-w-sm text-balance text-muted-foreground">
-        Abonnementet ditt er aktivt. Nå kan du få raske middagsforslag, bruke opp rester og gjøre hverdagen litt enklere.
+        Abonnementet ditt er aktivt.
       </p>
       <Link to="/" className="w-full max-w-xs">
         <Button size="lg" className="h-12 w-full rounded-xl text-base font-semibold">
