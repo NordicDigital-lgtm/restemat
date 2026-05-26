@@ -114,7 +114,7 @@ function Index() {
       .join(", ");
   };
 
-  const submit = (value: string, regenerate?: boolean, leftovers?: boolean) => {
+  const submit = (value: string, regenerate?: boolean, leftovers?: boolean, constraint?: string) => {
     const cleaned = sanitizeIngredients(value);
     if (!cleaned) {
       setClientNotice(
