@@ -656,6 +656,9 @@ function createEmptyRecipeResult(
     proteinSuggestion: null,
     carbSuggestion: null,
     sauceSuggestion: null,
+    timeEstimateMin: null,
+    worstFittingHave: null,
+    bestFittingUnused: null,
     ...overrides,
   };
 }
