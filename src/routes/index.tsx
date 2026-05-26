@@ -135,6 +135,14 @@ function Index() {
       return;
     }
     setClientNotice(null);
+    if (!examplesHidden) {
+      setExamplesHidden(true);
+      try {
+        window.localStorage.setItem(EXAMPLES_HIDDEN_KEY, "1");
+      } catch {
+        // ignore
+      }
+    }
     if (!LIMIT_DISABLED && !isDev && !isPro() && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
