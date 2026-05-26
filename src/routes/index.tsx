@@ -459,6 +459,43 @@ function RecipeCard({
                 Utelatt av sikkerhetsgrunner: {recipe.unsafeReason}
               </p>
             )}
+            <div className="mt-4 flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground/80">Vil du justere?</p>
+              <div className="flex flex-wrap gap-2">
+                {firstUnused && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isPending || limitReached}
+                    onClick={() => onRefine(`Lag en rett uten ${firstUnused}.`, firstUnused)}
+                    className="rounded-full"
+                  >
+                    Lag uten {firstUnused}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => onRefine("Foreslå en enklere rett med færre trinn og færre ingredienser.")}
+                  className="rounded-full"
+                >
+                  Noe enklere
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => onRefine("Foreslå en rett som kan lages på under 20 minutter.")}
+                  className="rounded-full"
+                >
+                  Noe raskere
+                </Button>
+              </div>
+            </div>
           </section>
         )}
 
