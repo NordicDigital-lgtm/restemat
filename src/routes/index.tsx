@@ -6,7 +6,13 @@ import { findRecipe, type RecipeResult, cleanIngredientName, stripWrappingBracke
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw, Lightbulb } from "lucide-react";
+import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw, Lightbulb, PenLine, ChefHat as ChefHat2, Sparkles } from "lucide-react";
+
+const EXAMPLES = [
+  "Kylling, ris, paprika",
+  "Kjøttdeig, pasta, tomat",
+  "Laks, brokkoli, potet",
+];
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -94,8 +100,8 @@ function Index() {
 
   const limitReached = LIMIT_DISABLED ? false : !isDev && !isPro() && usage >= DAILY_LIMIT;
 
-  const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[] }>({
-    mutationFn: ({ ingredients, regenerate, excludeTitles }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles } }),
+  const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[]; constraint?: string }>({
+    mutationFn: ({ ingredients, regenerate, excludeTitles, constraint }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles, constraint } }),
   });
 
   const [clientNotice, setClientNotice] = useState<string | null>(null);
@@ -108,7 +114,7 @@ function Index() {
       .join(", ");
   };
 
-  const submit = (value: string, regenerate?: boolean, leftovers?: boolean) => {
+  const submit = (value: string, regenerate?: boolean, leftovers?: boolean, constraint?: string) => {
     const cleaned = sanitizeIngredients(value);
     if (!cleaned) {
       setClientNotice(
@@ -136,7 +142,7 @@ function Index() {
     }
     setLastSubmitted(cleaned);
     mutation.mutate(
-      { ingredients: cleaned, regenerate, excludeTitles: historyForCall },
+      { ingredients: cleaned, regenerate, excludeTitles: historyForCall, constraint },
       {
         onSuccess: (data) => {
           if (data?.fallback || data?.notFoodMessage) {
@@ -196,6 +202,19 @@ function Index() {
           className="min-h-32 resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
           disabled={mutation.isPending}
         />
+        <div className="flex flex-wrap gap-2">
+          {EXAMPLES.map((ex) => (
+            <button
+              key={ex}
+              type="button"
+              onClick={() => setIngredients(ex)}
+              disabled={mutation.isPending}
+              className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground/80 transition hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+            >
+              {ex}
+            </button>
+          ))}
+        </div>
         <Button
           type="submit"
           size="lg"
@@ -212,6 +231,42 @@ function Index() {
           )}
         </Button>
       </form>
+
+      {!mutation.data && !mutation.isPending && (
+        <section className="grid gap-4 rounded-3xl border border-border/60 bg-card/60 p-5 sm:p-6">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-foreground/70">Slik fungerer det</h2>
+          <ul className="flex flex-col gap-4">
+            <li className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <PenLine className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Skriv inn restene</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Bare en liste over det du har. Ingen prompt, ingen oppskrift å finne frem.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <ChefHat2 className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Få en oppskrift som passer</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Restemat velger rett basert på hva du faktisk har.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <RefreshCw className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Liker du ikke forslaget? Si fra.</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Trykk "Lag noe med restene" og få en ny rett laget av det som ble til overs fra første forslag.</p>
+              </div>
+            </li>
+          </ul>
+        </section>
+      )}
+
       {mounted && limitReached && (
         <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
           <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
@@ -292,6 +347,14 @@ function Index() {
             <RecipeCard
               recipe={mergedRecipe}
               onMakeSomethingElse={() => submit(lastSubmitted, true)}
+              onRefine={(constraint, excludeName) => {
+                const base = lastSubmitted
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter((s) => s && (!excludeName || s.toLowerCase() !== excludeName.toLowerCase()))
+                  .join(", ");
+                submit(base || lastSubmitted, true, false, constraint);
+              }}
               isPending={mutation.isPending}
               limitReached={limitReached}
             />
@@ -322,15 +385,18 @@ function Index() {
 function RecipeCard({
   recipe,
   onMakeSomethingElse,
+  onRefine,
   isPending,
   limitReached,
 }: {
   recipe: RecipeResult;
   onMakeSomethingElse: () => void;
+  onRefine: (constraint: string, excludeName?: string) => void;
   isPending: boolean;
   limitReached: boolean;
 }) {
   const showMakeSomethingElse = recipe.steps.length > 0;
+  const firstUnused = recipe.unusedIngredients[0];
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
@@ -393,6 +459,43 @@ function RecipeCard({
                 Utelatt av sikkerhetsgrunner: {recipe.unsafeReason}
               </p>
             )}
+            <div className="mt-4 flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground/80">Vil du justere?</p>
+              <div className="flex flex-wrap gap-2">
+                {firstUnused && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isPending || limitReached}
+                    onClick={() => onRefine(`Lag en rett uten ${firstUnused}.`, firstUnused)}
+                    className="rounded-full"
+                  >
+                    Lag uten {firstUnused}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => onRefine("Foreslå en enklere rett med færre trinn og færre ingredienser.")}
+                  className="rounded-full"
+                >
+                  Noe enklere
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => onRefine("Foreslå en rett som kan lages på under 20 minutter.")}
+                  className="rounded-full"
+                >
+                  Noe raskere
+                </Button>
+              </div>
+            </div>
           </section>
         )}
 
