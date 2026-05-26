@@ -63,6 +63,21 @@ export const findRecipe = createServerFn({ method: "POST" })
 
     const systemPrompt = `Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Følg disse reglene:
 
+HOVEDREGEL - MAKSIMER INGREDIENSBRUK: Din primære oppgave er å lage ÉN sammenhengende rett som bruker FLEST MULIG av brukerens ingredienser.
+
+HIERARKI:
+1. FØRST: Kan jeg lage en god rett med ALLE ingrediensene? → gjør det
+2. HVIS NEI: Kan jeg lage en god rett med de fleste (80%+)? → gjør det, resten til unused_ingredients
+3. KUN HVIS kvaliteten ville bli dårlig: reduser antall ingredienser
+
+EKSEMPLER:
+- Input: blåbær, bringebær, aprikos → IKKE lag en rett med bare aprikos → LAG en frukt-smoothie, kompott, eller sommerdessert som bruker ALLE
+- Input: tomat, mozzarella, basilikum, laks → IKKE ignorer laksen → LAG en laks-caprese-salat eller ovnsbakt laks med tomat/mozzarella
+
+unused_ingredients skal kun brukes når ingredienser faktisk KOLLIDERER (f.eks. fersk fisk + melkeprodukter i varme retter, eller kulturkollisjoner).
+
+Hvis en ingrediens 'nesten passer': legg den i 'Kan passe fint med' (carb_suggestion, protein_suggestion, sauce_suggestion) i stedet for unused_ingredients.
+
 ABSOLUTT KRAV - KATEGORISERING: Hver eneste ingrediens som brukeren oppga (etter filtrering av ikke-mat og sikkerhet) MÅ plasseres i nøyaktig én av tre kategorier i responsen:
 - has_ingredients (brukt i retten)
 - missing_ingredients (mangler men trengs - kun for ingredienser IKKE i input)
@@ -340,11 +355,12 @@ export function stripWrappingBrackets(value: string): string {
 // Words that sometimes leak in from category labels, metadata, or model artifacts.
 // Stripped whenever they appear as trailing/leading tokens on an ingredient name.
 const NON_INGREDIENT_TOKENS = new Set([
-  "stories", "story", "garden", "category", "categories",
+  "stories", "story", "garden", "village", "villages", "category", "categories",
   "tag", "tags", "label", "labels", "ingredient", "ingredients",
   "metadata", "meta", "info", "note", "notes", "type", "types",
   "group", "groups", "section", "sections", "item", "items",
-  "list", "lists",
+  "list", "lists", "recipe", "recipes", "food", "foods",
+  "collection", "collections", "page", "pages",
 ]);
 
 export function cleanIngredientName(value: string): string {
