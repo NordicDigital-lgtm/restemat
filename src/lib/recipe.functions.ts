@@ -80,17 +80,6 @@ Hvis brukeren skriver en åpenbar skrivefeil (f.eks. "egf" i stedet for "egg", "
 - Bruk det rettede navnet konsekvent i oppskriften og fremgangsmåten
 Eksempel: Input "ris, kylling, egf" → has_ingredients: ["ris", "kylling", "egg"]
 
-STEG-REGLER (HØY PRIORITET):
-
-- Hvert steg minimum 12-18 ord
-- Grupper relaterte handlinger (ikke splitt 'Bland X' og 'Rør om' til to steg)
-- Inkluder HVORDAN og HVORFOR, ikke bare HVA
-- DÅRLIG: 'Bland sammen soyasaus'
-- GODT: 'Bland sammen soyasaus, sesamolje og honning i en liten bolle til du har en glatt marinade'
-- DÅRLIG: 'Skjær tomat'
-- GODT: 'Skjær tomaten i tynne skiver og legg dem forsiktig på tallerkenen'
-- Hvis en handling er veldig kort (< 5 ord), legg den til FORRIGE steg i stedet.
-
 HOVEDREGEL - MAKSIMER INGREDIENSBRUK: Din primære oppgave er å lage ÉN sammenhengende rett som bruker FLEST MULIG av brukerens ingredienser.
 
 HIERARKI:
@@ -145,8 +134,43 @@ REGEL-REKKEFØLGE (viktigst først):
 - KARBOHYDRAT: ALLTID foreslå karbohydrat når oppskriften ikke inneholder noe karbohydrat — inkludert curry, gryterett, og sausbaserte retter der ris, naan eller flatbrød ville vært naturlig. Ikke hopp over denne bare fordi retten har en saus.
 - SAUS: Foreslå saus bare hvis oppskriften ikke inneholder saus, dressing, sjy eller pannesaus fra før.
 
+STEG-KVALITET - ABSOLUTT KRAV:
+
+Hvert enkelt steg i fremgangsmåten MÅ være minimum 15 ord og inneholde:
+
+- Et verb (handling): "Skrell", "Bland", "Stek", "Kok"
+
+- Objektet som behandles: "løken", "ingrediensene", "kyllingen"
+
+- Metoden: "i en stor kjele", "med en teskje", "på middels varme"
+
+- Resultatet eller tidsrammen: "til det er gyllen", "i 10 minutter", "til det er mørt"
+
+Grupper relaterte handlinger sammen. Ikke splitt "Bland X" og "Rør om" til to separate steg.
+
+GODE EKSEMPLER (følg dette mønsteret):
+
+✓ "Skrell og hakk løken fint før du steker den i olje på middels varme til den er gyllen og myk"
+
+✓ "Bland yoghurt, honning og sitronsaft i en liten bolle til du har en glatt og kremet dressing"
+
+✓ "Skjær tomaten i tynne skiver og legg dem forsiktig i lag på tallerkenen sammen med mozzarella"
+
+ALDRI skriv korte fragmenter som:
+
+✗ "Skjær tomat"
+
+✗ "Tilsett linser"
+
+✗ "Rør sammen miso"
+
+✗ "Bland sammen soyasaus"
+
+✗ "Finhakk ansjos"
+
+Hvis en handling ville bli under 10 ord alene, kombiner den med forrige eller neste steg.
+
 FORMAT:
-- STEG-KRAV: Hvert steg i fremgangsmåten skal være komplett og selvstendig — aldri skriv "I en stor bolle" eller "Tilsett ingrediensene" uten å spesifisere HVA som skal gjøres. Hvert steg må ha både et verb (handling) og et objekt (hva som behandles).
 - Enkle kulepunkter, ingen fet skrift som "Protein:" eller "Saus:"
 - Hvert kulepunkt er ett kort forslag, f.eks. "Kokt ris eller ovnsbakte poteter" eller "En enkel pannesaus laget av stekesjyen"
 - Maksimum 3 kulepunkter
