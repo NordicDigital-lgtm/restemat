@@ -113,7 +113,7 @@ function Index() {
       return;
     }
     setClientNotice(null);
-    if (!isDev && readUsage() >= DAILY_LIMIT) {
+    if (!LIMIT_DISABLED && !isDev && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
