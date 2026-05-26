@@ -71,6 +71,7 @@ function Index() {
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isDev, setIsDev] = useState(false);
+  const [examplesHidden, setExamplesHidden] = useState(false);
   const findRecipeFn = useServerFn(findRecipe);
 
   useEffect(() => {
