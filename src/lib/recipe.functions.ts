@@ -38,6 +38,9 @@ export type RecipeResult = {
   proteinSuggestion: string | null;
   carbSuggestion: string | null;
   sauceSuggestion: string | null;
+  timeEstimateMin: number | null;
+  worstFittingHave: string | null;
+  bestFittingUnused: string | null;
 };
 
 const MAX_GENERATION_ATTEMPTS = 3;
