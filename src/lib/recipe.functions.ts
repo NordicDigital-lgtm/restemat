@@ -403,6 +403,12 @@ export function cleanIngredientName(value: string): string {
   // or a dash surrounded by spaces) — explanations / category labels follow these.
   let s = value.split(/\s*[,;:/|]\s*|\s+[-–—]\s+/)[0] ?? value;
   s = s.replace(/\s+/g, " ").trim();
+  // Aggressive suffix sweep: strip known metadata words (run repeatedly to
+  // catch chained suffixes like "blåbær village stories").
+  const SUFFIX_RE = /\s+(village|villages|stories|story|category|categories|ingredient|ingredients|items|item|products|product|recipes|recipe|tags|tag|labels|label|collection|collections|pages|page|foods|food)$/i;
+  while (SUFFIX_RE.test(s)) {
+    s = s.replace(SUFFIX_RE, "").trim();
+  }
   // Strip leading/trailing non-ingredient tokens repeatedly.
   let changed = true;
   while (changed) {
