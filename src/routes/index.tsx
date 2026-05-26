@@ -315,7 +315,7 @@ function Index() {
         </p>
       )}
 
-      {clientNotice && (
+      {clientNotice !== null && clientNotice !== "" && (
         <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm font-medium text-warning">
           {clientNotice}
         </div>
