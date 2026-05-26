@@ -231,6 +231,42 @@ function Index() {
           )}
         </Button>
       </form>
+
+      {!mutation.data && !mutation.isPending && (
+        <section className="grid gap-4 rounded-3xl border border-border/60 bg-card/60 p-5 sm:p-6">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-foreground/70">Slik fungerer det</h2>
+          <ul className="flex flex-col gap-4">
+            <li className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <PenLine className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Skriv inn restene</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Bare en liste over det du har. Ingen prompt, ingen oppskrift å finne frem.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <ChefHat2 className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Få en oppskrift som passer</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Restemat velger rett basert på hva du faktisk har.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <RefreshCw className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Liker du ikke forslaget? Si fra.</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Trykk "Lag noe med restene" og få en ny rett laget av det som ble til overs fra første forslag.</p>
+              </div>
+            </li>
+          </ul>
+        </section>
+      )}
+
       {mounted && limitReached && (
         <div className="rounded-2xl border border-[#E8D5C4] bg-[#FDF6F0] p-6 text-center">
           <p className="text-lg font-bold text-[#8B5E3C]">Dagens søk er brukt opp</p>
