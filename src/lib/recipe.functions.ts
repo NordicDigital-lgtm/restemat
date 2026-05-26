@@ -334,7 +334,12 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
     const lowIngredientNote = raw.low_ingredient_note
       ? cleanString(raw.low_ingredient_note)
       : null;
-    const unusedIngredients = toStringArray(raw.unused_ingredients);
+    const unusedIngredients = toStringArray(raw.unused_ingredients).map((name) =>
+      name
+        .replace(/Header$/i, "")
+        .replace(/(luxury|health|village|organic|fresh|premium|Cerferf)$/i, "")
+        .trim(),
+    );
     const unusedReason = raw.unused_reason
       ? cleanString(raw.unused_reason)
       : null;
