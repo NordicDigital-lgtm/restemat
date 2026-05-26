@@ -327,8 +327,22 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
     // Parse successful recipe response
     const title = cleanString(raw.title);
     const description = cleanString(raw.description);
-    const haveIngredients = toStringArray(raw.has_ingredients);
-    const missingIngredients = toStringArray(raw.missing_ingredients);
+    const haveIngredients = toStringArray(raw.has_ingredients).map((name) =>
+      name
+        .replace(/Header$/i, "")
+        .replace(/(luxury|health|village|organic|fresh|premium|Cerferf)$/i, "")
+        .trim(),
+    );
+    const missingIngredients = toStringArray(raw.missing_ingredients).map(
+      (name) =>
+        name
+          .replace(/Header$/i, "")
+          .replace(
+            /(luxury|health|village|organic|fresh|premium|Cerferf)$/i,
+            "",
+          )
+          .trim(),
+    );
     const fullIngredients = toFullIngredients(raw.full_ingredients);
     const steps = toStringArray(raw.steps);
     const lowIngredientNote = raw.low_ingredient_note
