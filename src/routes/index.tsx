@@ -87,6 +87,13 @@ function Index() {
     }
     setIsDev(dev);
     setUsage(readUsage());
+    try {
+      if (window.localStorage.getItem(EXAMPLES_HIDDEN_KEY) === "1") {
+        setExamplesHidden(true);
+      }
+    } catch {
+      // ignore
+    }
     setMounted(true);
   }, []);
 
