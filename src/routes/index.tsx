@@ -221,19 +221,21 @@ function Index() {
           className="min-h-32 resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
           disabled={mutation.isPending}
         />
-        <div className="flex flex-wrap gap-2">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex}
-              type="button"
-              onClick={() => setIngredients(ex)}
-              disabled={mutation.isPending}
-              className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground/80 transition hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
-            >
-              {ex}
-            </button>
-          ))}
-        </div>
+        {mounted && !examplesHidden && (
+          <div className="grid grid-cols-2 gap-2">
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex}
+                type="button"
+                onClick={() => setIngredients(ex)}
+                disabled={mutation.isPending}
+                className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground/80 transition hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+              >
+                {ex}
+              </button>
+            ))}
+          </div>
+        )}
         <Button
           type="submit"
           size="lg"
