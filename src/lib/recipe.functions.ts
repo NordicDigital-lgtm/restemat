@@ -82,7 +82,7 @@ Eksempel: Input "ris, kylling, egf" → has_ingredients: ["ris", "kylling", "egg
 
 STEG-REGLER (HØY PRIORITET):
 
-- Hvert steg minimum 10-15 ord
+- Hvert steg minimum 12-18 ord
 - Grupper relaterte handlinger (ikke splitt 'Bland X' og 'Rør om' til to steg)
 - Inkluder HVORDAN og HVORFOR, ikke bare HVA
 - DÅRLIG: 'Bland sammen soyasaus'
@@ -106,39 +106,6 @@ unused_ingredients skal kun brukes når ingredienser faktisk KOLLIDERER (f.eks. 
 
 Hvis en ingrediens 'nesten passer': legg den i 'Kan passe fint med' (carb_suggestion, protein_suggestion, sauce_suggestion) i stedet for unused_ingredients.
 
-STEG-KVALITET - PROFESJONELLE FREMGANGSMÅTER:
-
-Hver fremgangsmåte-steg MÅ være komplett, informativ og selvstendig.
-
-REGLER:
-1. MINIMUM 8-13 ord per steg (korte fragmenter er FORBUDT)
-2. Hver steg må inneholde: HVA + HVORDAN + HVORFOR/RESULTAT
-3. Grupper relaterte handlinger i SAMME steg
-4. Aldri lag et steg som bare er 'Bland X' eller 'Del Y' - legg til KONTEKST
-
-DÅRLIGE eksempler (ALDRI gjør dette):
-
-❌ 'Bland sammen limejuice'
-❌ 'Del aprikosene i to'
-❌ 'Bland sammen ricotta'
-
-GODE eksempler (SLik skal det være):
-
-✅ 'Bland yoghurt eller ricotta med honning og en skvis sitronsaft i en liten bolle til du har en glatt dressing'
-✅ 'Skyll blåbær og bringebær forsiktig i kaldt vann og la dem renne godt av seg på et kjøkkenpapir'
-✅ 'Server gryten i dype tallerkener med små klatter av resten av ricottaen og topp med grovhakkede valnøtter for ekstra tekstur'
-
-HVIS en handling er veldig kort (f.eks. 'rør om'):
-→ Legg den til SLUTTEN av forrige steg i stedet for å lage nytt steg
-
-Eksempel:
-
-I stedet for:
-  Steg 3: Ha grønnsakene i pannen
-  Steg 4: Rør om
-
-Skriv:
-  Steg 3: Ha grønnsakene i pannen og rør godt rundt til de begynner å bli møre
 
 ABSOLUTT KRAV - KATEGORISERING: Hver eneste ingrediens som brukeren oppga (etter filtrering av ikke-mat og sikkerhet) MÅ plasseres i nøyaktig én av tre kategorier i responsen:
 - has_ingredients (brukt i retten)
