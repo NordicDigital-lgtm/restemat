@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OppgraderRouteImport } from './routes/oppgrader'
+import { Route as BetaltRouteImport } from './routes/betalt'
 import { Route as IndexRouteImport } from './routes/index'
 
 const OppgraderRoute = OppgraderRouteImport.update({
   id: '/oppgrader',
   path: '/oppgrader',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BetaltRoute = BetaltRouteImport.update({
+  id: '/betalt',
+  path: '/betalt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/betalt': typeof BetaltRoute
   '/oppgrader': typeof OppgraderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/betalt': typeof BetaltRoute
   '/oppgrader': typeof OppgraderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/betalt': typeof BetaltRoute
   '/oppgrader': typeof OppgraderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/oppgrader'
+  fullPaths: '/' | '/betalt' | '/oppgrader'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/oppgrader'
-  id: '__root__' | '/' | '/oppgrader'
+  to: '/' | '/betalt' | '/oppgrader'
+  id: '__root__' | '/' | '/betalt' | '/oppgrader'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BetaltRoute: typeof BetaltRoute
   OppgraderRoute: typeof OppgraderRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/oppgrader'
       fullPath: '/oppgrader'
       preLoaderRoute: typeof OppgraderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/betalt': {
+      id: '/betalt'
+      path: '/betalt'
+      fullPath: '/betalt'
+      preLoaderRoute: typeof BetaltRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BetaltRoute: BetaltRoute,
   OppgraderRoute: OppgraderRoute,
 }
 export const routeTree = rootRouteImport
