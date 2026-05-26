@@ -142,7 +142,7 @@ function Index() {
     }
     setLastSubmitted(cleaned);
     mutation.mutate(
-      { ingredients: cleaned, regenerate, excludeTitles: historyForCall },
+      { ingredients: cleaned, regenerate, excludeTitles: historyForCall, constraint },
       {
         onSuccess: (data) => {
           if (data?.fallback || data?.notFoodMessage) {
