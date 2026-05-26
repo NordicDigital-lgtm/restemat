@@ -63,6 +63,16 @@ export const findRecipe = createServerFn({ method: "POST" })
 
     const systemPrompt = `Du er en hjelpsom norsk kokk som lager enkle middagsforslag basert på det folk har hjemme. Svar alltid på norsk. Følg disse reglene:
 
+STEG-REGLER (HØY PRIORITET):
+- Hvert steg minimum 10-15 ord
+- Grupper relaterte handlinger (ikke splitt 'Bland X' og 'Rør om' til to steg)
+- Inkluder HVORDAN og HVORFOR, ikke bare HVA
+- DÅRLIG: 'Bland sammen soyasaus'
+- GODT: 'Bland sammen soyasaus, sesamolje og honning i en liten bolle til du har en glatt marinade'
+- DÅRLIG: 'Skjær tomat'
+- GODT: 'Skjær tomaten i tynne skiver og legg dem forsiktig på tallerkenen'
+- Hvis en handling er veldig kort (< 5 ord), legg den til FORRIGE steg i stedet.
+
 HOVEDREGEL - MAKSIMER INGREDIENSBRUK: Din primære oppgave er å lage ÉN sammenhengende rett som bruker FLEST MULIG av brukerens ingredienser.
 
 HIERARKI:
@@ -403,6 +413,12 @@ export function cleanIngredientName(value: string): string {
   // or a dash surrounded by spaces) — explanations / category labels follow these.
   let s = value.split(/\s*[,;:/|]\s*|\s+[-–—]\s+/)[0] ?? value;
   s = s.replace(/\s+/g, " ").trim();
+  // Aggressive suffix sweep: strip known metadata words (run repeatedly to
+  // catch chained suffixes like "blåbær village stories").
+  const SUFFIX_RE = /\s+(village|villages|stories|story|category|categories|ingredient|ingredients|items|item|products|product|recipes|recipe|tags|tag|labels|label|collection|collections|pages|page|foods|food)$/i;
+  while (SUFFIX_RE.test(s)) {
+    s = s.replace(SUFFIX_RE, "").trim();
+  }
   // Strip leading/trailing non-ingredient tokens repeatedly.
   let changed = true;
   while (changed) {
