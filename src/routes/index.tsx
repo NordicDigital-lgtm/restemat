@@ -629,9 +629,19 @@ function RecipeCard({
                     }}
                     className="h-auto rounded-2xl px-3 py-2 text-xs font-semibold"
                   >
-                    Uten {item}
+                    {item}
                   </Button>
                 ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => setRefineMode("med")}
+                  className="h-auto rounded-2xl px-3 py-2 text-xs font-semibold text-muted-foreground"
+                >
+                  Lag med ...
+                </Button>
               </div>
             )}
             {refineMode === "med" && (
@@ -649,9 +659,19 @@ function RecipeCard({
                     }}
                     className="h-auto rounded-2xl px-3 py-2 text-xs font-semibold"
                   >
-                    Med {item}
+                    {item}
                   </Button>
                 ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => setRefineMode("uten")}
+                  className="h-auto rounded-2xl px-3 py-2 text-xs font-semibold text-muted-foreground"
+                >
+                  Lag uten ...
+                </Button>
               </div>
             )}
           </section>
