@@ -627,10 +627,9 @@ function RecipeCard({
                 size="sm"
                 disabled={isPending || limitReached}
                 onClick={() => onRefine("Foreslå en enklere rett med maks 4–5 ingredienser totalt og færre trinn.")}
-                className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+                className="h-10 rounded-2xl px-3 text-xs font-semibold"
               >
-                <span className="block w-full">Noe enklere</span>
-                <span className="block w-full text-[10px] font-normal text-muted-foreground">· færre ingredienser</span>
+                Noe enklere
               </Button>
               <Button
                 type="button"
@@ -638,10 +637,9 @@ function RecipeCard({
                 size="sm"
                 disabled={isPending || limitReached}
                 onClick={() => onRefine("Foreslå en rett som kan lages på under 20 minutter.")}
-                className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+                className="h-10 rounded-2xl px-3 text-xs font-semibold"
               >
-                <span className="block w-full">Noe raskere</span>
-                <span className="block w-full text-[10px] font-normal text-muted-foreground">· under 20 min</span>
+                Noe raskere
               </Button>
             </div>
           </section>
