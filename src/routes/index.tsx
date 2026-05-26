@@ -262,8 +262,8 @@ function Index() {
                 <PenLine className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Skriv inn restene</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Bare en liste over det du har. Ingen prompt, ingen oppskrift å finne frem.</p>
+                <p className="text-sm font-semibold text-foreground">Skriv inn restene dine</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Legg inn det du har i kjøleskapet.</p>
               </div>
             </li>
             <li className="flex gap-3">
@@ -272,7 +272,7 @@ function Index() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Få en oppskrift som passer</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Restemat velger rett basert på hva du faktisk har.</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Restemat foreslår en rett basert på ingrediensene dine.</p>
               </div>
             </li>
             <li className="flex gap-3">
@@ -280,8 +280,17 @@ function Index() {
                 <RefreshCw className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Liker du ikke forslaget? Si fra.</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Trykk "Lag noe med restene" og få en ny rett laget av det som ble til overs fra første forslag.</p>
+                <p className="text-sm font-semibold text-foreground">Ikke fornøyd? Lag en ny rett</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Bruk restene fra første forslag og få et nytt alternativ.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <PackageOpen className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Fortsatt mer igjen?</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Trykk på "Lag noe med restene" og tøm kjøleskapet helt.</p>
               </div>
             </li>
           </ul>
