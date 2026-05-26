@@ -197,9 +197,6 @@ function Index() {
         <p className="mt-3 max-w-sm text-balance font-medium text-foreground/75">
           Fra rester til middag, helt enkelt.
         </p>
-        <p className="mt-2 text-sm text-foreground/60">
-          Skriv inn det du har i kjøleskapet, så lager jeg en oppskrift til deg.
-        </p>
       </header>
 
       <form
@@ -426,6 +423,7 @@ function RecipeCard({
   limitReached: boolean;
 }) {
   const showMakeSomethingElse = recipe.steps.length > 0;
+  const [refineMode, setRefineMode] = useState<"none" | "med" | "uten">("none");
   const worstHave = recipe.worstFittingHave;
   const bestUnused = recipe.bestFittingUnused;
   const showRefine = showMakeSomethingElse && (worstHave || bestUnused || true);
@@ -560,7 +558,7 @@ function RecipeCard({
           </section>
         )}
 
-        {(!!recipe.sauceSuggestion || !!recipe.proteinSuggestion || !!recipe.carbSuggestion) && (
+        {([recipe.sauceSuggestion, recipe.proteinSuggestion, recipe.carbSuggestion].some(s => s && s !== "null")) && (
           <section className="rounded-2xl border border-border/60 bg-muted/40 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-foreground/80">
               <Lightbulb className="h-4 w-4" />
@@ -592,56 +590,70 @@ function RecipeCard({
         {showRefine && (
           <section>
             <p className="mb-3 text-sm font-medium text-foreground/80">Vil du justere?</p>
-            <div className="grid grid-cols-2 gap-2">
-              {worstHave ? (
+            {refineMode === "none" && (
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   disabled={isPending || limitReached}
-                  onClick={() => onRefine(`Lag en variant av denne retten uten ${worstHave}.`, worstHave)}
-                  className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+                  onClick={() => setRefineMode("uten")}
+                  className="h-10 rounded-2xl px-3 text-xs font-semibold"
                 >
-                  <span className="block w-full">Lag uten {worstHave}</span>
+                  Lag uten ...
                 </Button>
-              ) : (
-                <span />
-              )}
-              {bestUnused ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   disabled={isPending || limitReached}
-                  onClick={() => onRefine(`Lag en variant av denne retten som inkluderer ${bestUnused}.`)}
-                  className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+                  onClick={() => setRefineMode("med")}
+                  className="h-10 rounded-2xl px-3 text-xs font-semibold"
                 >
-                  <span className="block w-full">Lag med {bestUnused}</span>
+                  Lag med ...
                 </Button>
-              ) : (
-                <span />
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isPending || limitReached}
-                onClick={() => onRefine("Foreslå en enklere rett med maks 4–5 ingredienser totalt og færre trinn.")}
-                className="h-10 rounded-2xl px-3 text-xs font-semibold"
-              >
-                Noe enklere
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isPending || limitReached}
-                onClick={() => onRefine("Foreslå en rett som kan lages på under 20 minutter.")}
-                className="h-10 rounded-2xl px-3 text-xs font-semibold"
-              >
-                Noe raskere
-              </Button>
-            </div>
+              </div>
+            )}
+            {refineMode === "uten" && (
+              <div className="flex flex-wrap gap-2">
+                {recipe.haveIngredients.map((item) => (
+                  <Button
+                    key={item}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isPending || limitReached}
+                    onClick={() => {
+                      setRefineMode("none");
+                      onRefine(`Lag en variant uten ${item}.`, item);
+                    }}
+                    className="h-auto rounded-2xl px-3 py-2 text-xs font-semibold"
+                  >
+                    Uten {item}
+                  </Button>
+                ))}
+              </div>
+            )}
+            {refineMode === "med" && (
+              <div className="flex flex-wrap gap-2">
+                {recipe.unusedIngredients.map((item) => (
+                  <Button
+                    key={item}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isPending || limitReached}
+                    onClick={() => {
+                      setRefineMode("none");
+                      onRefine(`Lag en variant som inkluderer ${item}.`);
+                    }}
+                    className="h-auto rounded-2xl px-3 py-2 text-xs font-semibold"
+                  >
+                    Med {item}
+                  </Button>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
