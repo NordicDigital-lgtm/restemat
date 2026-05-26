@@ -347,6 +347,14 @@ function Index() {
             <RecipeCard
               recipe={mergedRecipe}
               onMakeSomethingElse={() => submit(lastSubmitted, true)}
+              onRefine={(constraint, excludeName) => {
+                const base = lastSubmitted
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter((s) => s && (!excludeName || s.toLowerCase() !== excludeName.toLowerCase()))
+                  .join(", ");
+                submit(base || lastSubmitted, true, false, constraint);
+              }}
               isPending={mutation.isPending}
               limitReached={limitReached}
             />
