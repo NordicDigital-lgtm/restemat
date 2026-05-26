@@ -232,7 +232,7 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
           type: "array",
           items: { type: "string" },
           description:
-            "Ingredienser brukeren har som ikke passer til denne retten. Kun rene navn akkurat slik brukeren skrev dem, ingen tilleggstekst.",
+            "Ingredienser brukeren har som ikke passer til denne retten. VIKTIG: Returner KUN det rene ingrediensnavnet - aldri legg til suffikser, identifiers eller tilleggstekst. Eksempler på RIKTIG format: 'soyasaus', 'ingefær', 'kanel', 'rosenkål'. ALDRI: 'soyasausHeader', 'ingefærHeader', 'kanelHeader', 'soyasaus (ikke brukt)', 'ingefær-unused'.",
         },
         unused_reason: {
           type: "string",
