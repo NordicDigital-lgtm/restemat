@@ -224,7 +224,7 @@ function Index() {
         </div>
       )}
 
-      {mounted && !isDev && !LIMIT_DISABLED && (
+      {mounted && !isDev && !isPro() && !LIMIT_DISABLED && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
