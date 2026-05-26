@@ -6,13 +6,16 @@ import { findRecipe, type RecipeResult, cleanIngredientName, stripWrappingBracke
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw, Lightbulb, PenLine, ChefHat as ChefHat2, Sparkles } from "lucide-react";
+import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw, Lightbulb, PenLine, ChefHat as ChefHat2, Sparkles, PackageOpen, Clock } from "lucide-react";
 
 const EXAMPLES = [
   "Kylling, ris, paprika",
   "Kjøttdeig, pasta, tomat",
   "Laks, brokkoli, potet",
+  "Egg, løk, ost",
 ];
+
+const EXAMPLES_HIDDEN_KEY = "restemat_examples_hidden";
 
 export const Route = createFileRoute("/")({
   component: Index,
