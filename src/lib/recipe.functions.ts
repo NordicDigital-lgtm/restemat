@@ -618,6 +618,7 @@ async function callLovableGateway(
     },
     body: JSON.stringify({
       model: LOVABLE_MODEL,
+      max_tokens: 2000,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
