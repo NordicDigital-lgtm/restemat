@@ -385,15 +385,18 @@ function Index() {
 function RecipeCard({
   recipe,
   onMakeSomethingElse,
+  onRefine,
   isPending,
   limitReached,
 }: {
   recipe: RecipeResult;
   onMakeSomethingElse: () => void;
+  onRefine: (constraint: string, excludeName?: string) => void;
   isPending: boolean;
   limitReached: boolean;
 }) {
   const showMakeSomethingElse = recipe.steps.length > 0;
+  const firstUnused = recipe.unusedIngredients[0];
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
