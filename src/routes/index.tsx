@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const LIMIT_DISABLED = true; // Set to true to disable daily search limit
+const LIMIT_DISABLED = false; // Set to true to disable daily search limit
 const DAILY_LIMIT = 2;
 const STORAGE_KEY = "restemat_daily_usage";
 
@@ -166,6 +166,9 @@ function Index() {
         <h1 className="text-4xl font-[650] tracking-tight sm:text-5xl">Restemat</h1>
         <p className="mt-3 max-w-sm text-balance font-medium text-foreground/75">
           Fra rester til middag, helt enkelt.
+        </p>
+        <p className="mt-2 text-sm text-foreground/60">
+          Skriv inn det du har i kjøleskapet, så lager jeg en oppskrift til deg.
         </p>
       </header>
 
