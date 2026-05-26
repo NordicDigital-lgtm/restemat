@@ -6,13 +6,16 @@ import { findRecipe, type RecipeResult, cleanIngredientName, stripWrappingBracke
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw, Lightbulb, PenLine, ChefHat as ChefHat2, Sparkles } from "lucide-react";
+import { Loader2, ChefHat, Check, ShoppingBasket, ListOrdered, UtensilsCrossed, Archive, ArrowRight, RefreshCw, Lightbulb, PenLine, ChefHat as ChefHat2, PackageOpen, Clock } from "lucide-react";
 
 const EXAMPLES = [
   "Kylling, ris, paprika",
   "Kjøttdeig, pasta, tomat",
   "Laks, brokkoli, potet",
+  "Egg, løk, ost",
 ];
+
+const EXAMPLES_HIDDEN_KEY = "restemat_examples_hidden";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -68,6 +71,7 @@ function Index() {
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isDev, setIsDev] = useState(false);
+  const [examplesHidden, setExamplesHidden] = useState(false);
   const findRecipeFn = useServerFn(findRecipe);
 
   useEffect(() => {
@@ -83,6 +87,13 @@ function Index() {
     }
     setIsDev(dev);
     setUsage(readUsage());
+    try {
+      if (window.localStorage.getItem(EXAMPLES_HIDDEN_KEY) === "1") {
+        setExamplesHidden(true);
+      }
+    } catch {
+      // ignore
+    }
     setMounted(true);
   }, []);
 
@@ -124,6 +135,14 @@ function Index() {
       return;
     }
     setClientNotice(null);
+    if (!examplesHidden) {
+      setExamplesHidden(true);
+      try {
+        window.localStorage.setItem(EXAMPLES_HIDDEN_KEY, "1");
+      } catch {
+        // ignore
+      }
+    }
     if (!LIMIT_DISABLED && !isDev && !isPro() && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
@@ -202,19 +221,21 @@ function Index() {
           className="min-h-32 resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
           disabled={mutation.isPending}
         />
-        <div className="flex flex-wrap gap-2">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex}
-              type="button"
-              onClick={() => setIngredients(ex)}
-              disabled={mutation.isPending}
-              className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground/80 transition hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
-            >
-              {ex}
-            </button>
-          ))}
-        </div>
+        {mounted && !examplesHidden && (
+          <div className="grid grid-cols-2 gap-2">
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex}
+                type="button"
+                onClick={() => setIngredients(ex)}
+                disabled={mutation.isPending}
+                className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground/80 transition hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+              >
+                {ex}
+              </button>
+            ))}
+          </div>
+        )}
         <Button
           type="submit"
           size="lg"
@@ -241,8 +262,8 @@ function Index() {
                 <PenLine className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Skriv inn restene</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Bare en liste over det du har. Ingen prompt, ingen oppskrift å finne frem.</p>
+                <p className="text-sm font-semibold text-foreground">Skriv inn restene dine</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Legg inn det du har i kjøleskapet.</p>
               </div>
             </li>
             <li className="flex gap-3">
@@ -251,7 +272,7 @@ function Index() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Få en oppskrift som passer</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Restemat velger rett basert på hva du faktisk har.</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Restemat foreslår en rett basert på ingrediensene dine.</p>
               </div>
             </li>
             <li className="flex gap-3">
@@ -259,8 +280,17 @@ function Index() {
                 <RefreshCw className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Liker du ikke forslaget? Si fra.</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Trykk "Lag noe med restene" og få en ny rett laget av det som ble til overs fra første forslag.</p>
+                <p className="text-sm font-semibold text-foreground">Ikke fornøyd? Lag en ny rett</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Bruk restene fra første forslag og få et nytt alternativ.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <PackageOpen className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Fortsatt mer igjen?</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Trykk på "Lag noe med restene" og tøm kjøleskapet helt.</p>
               </div>
             </li>
           </ul>
@@ -396,11 +426,21 @@ function RecipeCard({
   limitReached: boolean;
 }) {
   const showMakeSomethingElse = recipe.steps.length > 0;
-  const firstUnused = recipe.unusedIngredients[0];
+  const worstHave = recipe.worstFittingHave;
+  const bestUnused = recipe.bestFittingUnused;
+  const showRefine = showMakeSomethingElse && (worstHave || bestUnused || true);
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
-        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{recipe.name}</h2>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{recipe.name}</h2>
+          {recipe.timeEstimateMin && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <Clock className="h-3.5 w-3.5" />
+              {recipe.timeEstimateMin} min
+            </span>
+          )}
+        </div>
         <p className="mt-2 font-medium text-muted-foreground">{recipe.description}</p>
       </div>
 
@@ -459,43 +499,6 @@ function RecipeCard({
                 Utelatt av sikkerhetsgrunner: {recipe.unsafeReason}
               </p>
             )}
-            <div className="mt-4 flex flex-col gap-2">
-              <p className="text-sm font-medium text-foreground/80">Vil du justere?</p>
-              <div className="flex flex-wrap gap-2">
-                {firstUnused && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={isPending || limitReached}
-                    onClick={() => onRefine(`Lag en rett uten ${firstUnused}.`, firstUnused)}
-                    className="rounded-full"
-                  >
-                    Lag uten {firstUnused}
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={isPending || limitReached}
-                  onClick={() => onRefine("Foreslå en enklere rett med færre trinn og færre ingredienser.")}
-                  className="rounded-full"
-                >
-                  Noe enklere
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={isPending || limitReached}
-                  onClick={() => onRefine("Foreslå en rett som kan lages på under 20 minutter.")}
-                  className="rounded-full"
-                >
-                  Noe raskere
-                </Button>
-              </div>
-            </div>
           </section>
         )}
 
@@ -585,6 +588,65 @@ function RecipeCard({
             </ul>
           </section>
         )}
+
+        {showRefine && (
+          <section>
+            <p className="mb-3 text-sm font-medium text-foreground/80">Vil du justere?</p>
+            <div className="grid grid-cols-2 gap-2">
+              {worstHave ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => onRefine(`Lag en variant av denne retten uten ${worstHave}.`, worstHave)}
+                  className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+                >
+                  <span className="block w-full">Lag uten {worstHave}</span>
+                </Button>
+              ) : (
+                <span />
+              )}
+              {bestUnused ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending || limitReached}
+                  onClick={() => onRefine(`Lag en variant av denne retten som inkluderer ${bestUnused}.`)}
+                  className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+                >
+                  <span className="block w-full">Lag med {bestUnused}</span>
+                </Button>
+              ) : (
+                <span />
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isPending || limitReached}
+                onClick={() => onRefine("Foreslå en enklere rett med maks 4–5 ingredienser totalt og færre trinn.")}
+                className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+              >
+                <span className="block w-full">Noe enklere</span>
+                <span className="block w-full text-[10px] font-normal text-muted-foreground">· færre ingredienser</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isPending || limitReached}
+                onClick={() => onRefine("Foreslå en rett som kan lages på under 20 minutter.")}
+                className="h-auto min-h-12 flex-col items-start gap-0 rounded-2xl px-3 py-2 text-left text-xs font-semibold leading-tight whitespace-normal"
+              >
+                <span className="block w-full">Noe raskere</span>
+                <span className="block w-full text-[10px] font-normal text-muted-foreground">· under 20 min</span>
+              </Button>
+            </div>
+          </section>
+        )}
+
 
         {showMakeSomethingElse && (
           <Button
