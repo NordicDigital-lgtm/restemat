@@ -327,33 +327,22 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
     // Parse successful recipe response
     const title = cleanString(raw.title);
     const description = cleanString(raw.description);
-    const haveIngredients = toStringArray(raw.has_ingredients).map((name) =>
-      name
-        .replace(/Header$/i, "")
+    const stripSuffix = (str: string) =>
+      str
+        .replace(/(Header|neighborhood)\s*(g|ts|stk|dl|ss|fedd|potte)?$/i, "")
         .replace(/(luxury|health|village|organic|fresh|premium|Cerferf)$/i, "")
-        .trim(),
-    );
-    const missingIngredients = toStringArray(raw.missing_ingredients).map(
-      (name) =>
-        name
-          .replace(/Header$/i, "")
-          .replace(
-            /(luxury|health|village|organic|fresh|premium|Cerferf)$/i,
-            "",
-          )
-          .trim(),
-    );
-    const fullIngredients = toFullIngredients(raw.full_ingredients);
+        .trim();
+    const haveIngredients = toStringArray(raw.has_ingredients).map(stripSuffix);
+    const missingIngredients = toStringArray(raw.missing_ingredients).map(stripSuffix);
+    const fullIngredients = toFullIngredients(raw.full_ingredients).map((fi) => ({
+      ...fi,
+      name: stripSuffix(fi.name),
+    }));
     const steps = toStringArray(raw.steps);
     const lowIngredientNote = raw.low_ingredient_note
       ? cleanString(raw.low_ingredient_note)
       : null;
-    const unusedIngredients = toStringArray(raw.unused_ingredients).map((name) =>
-      name
-        .replace(/Header$/i, "")
-        .replace(/(luxury|health|village|organic|fresh|premium|Cerferf)$/i, "")
-        .trim(),
-    );
+    const unusedIngredients = toStringArray(raw.unused_ingredients).map(stripSuffix);
     const unusedReason = raw.unused_reason
       ? cleanString(raw.unused_reason)
       : null;
