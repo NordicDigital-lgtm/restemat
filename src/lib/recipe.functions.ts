@@ -10,6 +10,7 @@ const InputSchema = z.object({
   ingredients: z.string().min(1).max(2000),
   regenerate: z.boolean().optional(),
   excludeTitles: z.array(z.string().max(200)).max(50).optional(),
+  constraint: z.string().max(300).optional(),
 });
 
 export type FullIngredient = {
