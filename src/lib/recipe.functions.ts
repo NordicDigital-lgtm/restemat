@@ -340,11 +340,12 @@ export function stripWrappingBrackets(value: string): string {
 // Words that sometimes leak in from category labels, metadata, or model artifacts.
 // Stripped whenever they appear as trailing/leading tokens on an ingredient name.
 const NON_INGREDIENT_TOKENS = new Set([
-  "stories", "story", "garden", "category", "categories",
+  "stories", "story", "garden", "village", "villages", "category", "categories",
   "tag", "tags", "label", "labels", "ingredient", "ingredients",
   "metadata", "meta", "info", "note", "notes", "type", "types",
   "group", "groups", "section", "sections", "item", "items",
-  "list", "lists",
+  "list", "lists", "recipe", "recipes", "food", "foods",
+  "collection", "collections", "page", "pages",
 ]);
 
 export function cleanIngredientName(value: string): string {
