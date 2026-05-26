@@ -82,7 +82,7 @@ Eksempel: Input "ris, kylling, egf" → has_ingredients: ["ris", "kylling", "egg
 
 STEG-REGLER (HØY PRIORITET):
 
-- Hvert steg minimum 10-15 ord
+- Hvert steg minimum 12-18 ord
 - Grupper relaterte handlinger (ikke splitt 'Bland X' og 'Rør om' til to steg)
 - Inkluder HVORDAN og HVORFOR, ikke bare HVA
 - DÅRLIG: 'Bland sammen soyasaus'
