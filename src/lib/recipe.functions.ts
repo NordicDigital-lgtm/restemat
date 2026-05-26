@@ -139,22 +139,37 @@ REGEL-REKKEFØLGE (viktigst først):
 - SAUS: Foreslå saus bare hvis oppskriften ikke inneholder saus, dressing, sjy eller pannesaus fra før.
 
 STEG-REGLER (HØYESTE PRIORITET):
-- Hvert steg 15-20 ord - kortere enn 15 er for lite, lengre enn 20 blir ordrik fyllmasse
-- Skriv på naturlig norsk bokmål - ALDRI oversett fra engelsk
-- Inkluder handling, metode og resultat i én setning
-- Bruk ALDRI olivenolje til steking - bruk "smør", "nøytral olje" eller "rapsolje"
-- Unngå unaturlige uttrykk som "avgir god duft", "avgir smak" - skriv direkte hva som skjer
 
-GODE EKSEMPLER (følg denne stilen):
-✓ "Skrell og skjær potetene i terninger på ca 2 cm, skyll dem under kaldt vann og la dem renne av"
-✓ "Stek kyllingen i smør på middels varme til den har fått fin farge på begge sider og er gjennomstekt"
-✓ "Finhakk hvitløk og løk og stek dem i smør til løken er blank og myk uten å få farge"
+ABSOLUTT KRAV - KOMPLETT INSTRUKSJON: Hvert steg MÅ være en fullstendig instruksjon med:
+  - Et imperativverb som starter steget (Skjær, Stek, Tilsett, Kok, Rør, Finhakk osv.)
+  - Hvilket ingrediens/objekt handlingen gjelder
+  - Hvordan det gjøres, og/eller hva resultatet skal være
 
-DÅRLIGE EKSEMPLER (aldri skriv slik):
-✗ "Bland sammen soyasaus" (for kort, mangler kontekst)
+"Mens X" og "Når X" er ALDRI godkjente selvstendige steg. Kombiner alltid med en handling:
+  ✗ "Mens raguen koker"
+  ✓ "Mens raguen koker, kok pastaen i lettsaltet vann til den er al dente"
+  ✗ "Når grønnsakene er ferdige"
+  ✓ "Når grønnsakene er møre, fordel dem over quinoaen og dryss over limejuice"
+
+INGREDIENSDEKNING: Alle ingredienser i has_ingredients MÅ nevnes ved navn i minst ett steg. Gå gjennom has_ingredients etter du har skrevet stegene og sjekk at alle er med.
+
+Bruk ALDRI olivenolje til steking - bruk "smør", "nøytral olje" eller "rapsolje"
+
+GODE EKSEMPLER:
+
+✓ "Skrell og skjær potetene i terninger på ca 2 cm og skyll dem under kaldt vann"
+✓ "Stek kyllingen i smør på middels varme til den er gjennomstekt og har fått fin farge"
+✓ "Finhakk hvitløk og løk og stek i smør til løken er blank og myk"
+✓ "Mens kyllingen steker, kok pastaen etter anvisningen på pakken til al dente"
+✓ "Tilsett blomkålbukettene og la dem surre med i 3–4 minutter til de er lett møre"
+
+DÅRLIGE EKSEMPLER:
+
+✗ "Mens raguen koker" (ufullstendig - mangler handling)
+✗ "Stek løken" (for kort - mangler hvordan og resultat)
+✗ "Når grønnsakene er ferdige" (ufullstendig - mangler hva som skjer etterpå)
+✗ "Rør inn spinaten" (for kort - legg til kontekst: når, og hva resultatet er)
 ✗ "Stek kyllingen i olivenolje" (feil olje)
-✗ "til den avgir en god duft" (unaturlig norsk)
-✗ "Kok opp en stor med rikelig med saltet vann" (gebrokken grammatikk)
 
 FORMAT:
 - Enkle kulepunkter, ingen fet skrift som "Protein:" eller "Saus:"
