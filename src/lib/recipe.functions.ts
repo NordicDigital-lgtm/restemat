@@ -346,6 +346,18 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
     const sauceSuggestion = raw.sauce_suggestion
       ? cleanString(raw.sauce_suggestion)
       : null;
+    const timeEstimateMin =
+      typeof raw.time_estimate_min === "number"
+        ? Math.round(raw.time_estimate_min)
+        : typeof raw.time_estimate_min === "string" && /^\d+$/.test(raw.time_estimate_min.trim())
+          ? Number(raw.time_estimate_min.trim())
+          : null;
+    const worstFittingHave = raw.worst_fitting_have
+      ? stripSuffix(cleanIngredientName(stripWrappingBrackets(cleanString(raw.worst_fitting_have))))
+      : null;
+    const bestFittingUnused = raw.best_fitting_unused
+      ? stripSuffix(cleanIngredientName(stripWrappingBrackets(cleanString(raw.best_fitting_unused))))
+      : null;
 
     return {
       name: title,
@@ -366,6 +378,9 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
       proteinSuggestion,
       carbSuggestion,
       sauceSuggestion,
+      timeEstimateMin,
+      worstFittingHave: worstFittingHave || null,
+      bestFittingUnused: bestFittingUnused || null,
     };
   });
 
