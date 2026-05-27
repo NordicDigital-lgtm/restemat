@@ -222,7 +222,7 @@ Hvis ingenting faktisk mangler, utelat seksjonen helt — sett protein_suggestio
           type: "array",
           items: { type: "string" },
           description:
-            "Fremgangsmåte i fullstendige, beskrivende steg. KRAV: Hvert steg MÅ være minimum 15 ord. Hvert steg MÅ beskrive både handlingen, metoden og resultatet i én naturlig setning. Korte fragmenter som 'Skjær løken', 'Bland sammen smør' eller 'Vask tomatene' er IKKE tillatt — slike handlinger må slås sammen med tilstøtende steg slik at hvert steg er en komplett instruksjon.",
+            "Fremgangsmåte som fullstendige instruksjoner. Hvert steg starter med imperativverb og nevner ingrediens + handling + resultat. Alle ingredienser fra has_ingredients MÅ nevnes i minst ett steg.",
         },
         low_ingredient_note: {
           type: "string",
