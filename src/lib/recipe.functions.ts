@@ -50,10 +50,10 @@ const RETRYABLE_STATUS_CODES = new Set([429, 503, 504]);
 export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<RecipeResult> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    console.log("LOVABLE_API_KEY exists:", !!apiKey);
-    console.log("Using model:", LOVABLE_MODEL);
-    if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    console.log("ANTHROPIC_API_KEY exists:", !!apiKey);
+    console.log("Using model:", ANTHROPIC_MODEL);
+    if (!apiKey) throw new Error("ANTHROPIC_API_KEY mangler.");
 
 
     // Silently strip emoji from input before processing
