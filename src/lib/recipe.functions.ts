@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const LOVABLE_MODEL = "google/gemini-2.5-flash";
+const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
+const ANTHROPIC_MODEL = "claude-3-5-haiku-20241022";
 
 
 
@@ -50,10 +50,10 @@ const RETRYABLE_STATUS_CODES = new Set([429, 503, 504]);
 export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<RecipeResult> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    console.log("LOVABLE_API_KEY exists:", !!apiKey);
-    console.log("Using model:", LOVABLE_MODEL);
-    if (!apiKey) throw new Error("AI-kreditt er brukt opp. Legg til kreditt i Lovable-arbeidsområdet.");
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    console.log("ANTHROPIC_API_KEY exists:", !!apiKey);
+    console.log("Using model:", ANTHROPIC_MODEL);
+    if (!apiKey) throw new Error("ANTHROPIC_API_KEY mangler.");
 
 
     // Silently strip emoji from input before processing
@@ -609,59 +609,48 @@ async function callLovableGateway(
   userPrompt: string,
   toolParameters: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const response = await fetch(LOVABLE_AI_URL, {
+  const response = await fetch(ANTHROPIC_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": apiKey,
-      "X-Lovable-AIG-SDK": "raw-fetch",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: LOVABLE_MODEL,
+      model: ANTHROPIC_MODEL,
       max_tokens: 2000,
+      system: systemPrompt,
       messages: [
-        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
       tools: [
         {
-          type: "function",
-          function: {
-            name: "foresla_middag",
-            description: "Returner ett middagsforslag med full oppskrift",
-            parameters: toolParameters,
-          },
+          name: "foresla_middag",
+          description: "Returner ett middagsforslag med full oppskrift",
+          input_schema: toolParameters,
         },
       ],
-      tool_choice: { type: "function", function: { name: "foresla_middag" } },
+      tool_choice: { type: "tool", name: "foresla_middag" },
     }),
   });
 
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    const err = new Error(`Lovable AI gateway ${response.status}: ${text}`) as Error & { status?: number };
+    const err = new Error(`Anthropic API ${response.status}: ${text}`) as Error & { status?: number };
     err.status = response.status;
     throw err;
   }
 
   const json = (await response.json()) as {
-    choices?: Array<{
-      message?: {
-        tool_calls?: Array<{ function?: { name?: string; arguments?: string } }>;
-      };
-    }>;
+    content?: Array<{ type?: string; name?: string; input?: unknown }>;
   };
 
-  const toolCall = json.choices?.[0]?.message?.tool_calls?.[0]?.function;
-  if (!toolCall || toolCall.name !== "foresla_middag" || !toolCall.arguments) {
-    throw new Error("Lovable AI gateway returned no tool call");
+  const toolUseBlock = json.content?.find((b) => b.type === "tool_use");
+  if (!toolUseBlock || toolUseBlock.name !== "foresla_middag" || !toolUseBlock.input) {
+    throw new Error("Anthropic API returned no tool_use block");
   }
 
-  try {
-    return JSON.parse(toolCall.arguments) as Record<string, unknown>;
-  } catch {
-    throw new Error("Lovable AI gateway returned invalid tool arguments JSON");
-  }
+  return toolUseBlock.input as Record<string, unknown>;
 }
 
 
