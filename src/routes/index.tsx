@@ -424,9 +424,7 @@ function RecipeCard({
 }) {
   const showMakeSomethingElse = recipe.steps.length > 0;
   const [refineMode, setRefineMode] = useState<"none" | "med" | "uten">("none");
-  const worstHave = recipe.worstFittingHave;
-  const bestUnused = recipe.bestFittingUnused;
-  const showRefine = showMakeSomethingElse && (worstHave || bestUnused || true);
+  const showRefine = showMakeSomethingElse;
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
