@@ -103,22 +103,27 @@ type StripeCheckoutSession = {
   subscription: StripeSubscription | string | null;
 };
 
-async function stripeGet<T>(path: string): Promise<T | null> {
+async function stripeGet<T>(path: string): Promise<{ data: T } | { error: string }> {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
     console.error("[access] STRIPE_SECRET_KEY missing");
-    return null;
+    return { error: "STRIPE_SECRET_KEY missing" };
   }
-  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
-    headers: { Authorization: `Bearer ${key}` },
-  });
-  console.log(`[access] Stripe GET ${path} -> ${res.status}`);
-  if (!res.ok) {
-    const body = await res.text().catch(() => "<unreadable>");
-    console.error(`[access] Stripe error body: ${body}`);
-    return null;
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+    console.log(`[access] Stripe GET ${path} -> ${res.status}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => "<unreadable>");
+      console.error(`[access] Stripe error body: ${body}`);
+      return { error: `Stripe ${res.status}: ${body}` };
+    }
+    return { data: await res.json() as T };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { error: `Exception: ${msg}` };
   }
-  return (await res.json()) as T;
 }
 
 function isActiveStatus(status: string | undefined): boolean {
