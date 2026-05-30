@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getCookie, setCookie } from "@tanstack/react-start/server";
+import { getCookie, getRequestHost, setCookie } from "@tanstack/react-start/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 
@@ -59,14 +59,33 @@ function verifyCookieValue(value: string, secret: string): Payload | null {
   }
 }
 
+function cookieDomainForHost(host: string | undefined): string | undefined {
+  if (!host) return undefined;
+  const hostname = host.split(":")[0].toLowerCase();
+  // Share the cookie across restemat.com and any subdomain (e.g. www., restemat.restemat.com)
+  if (hostname === "restemat.com" || hostname.endsWith(".restemat.com")) {
+    return ".restemat.com";
+  }
+  return undefined;
+}
+
 function issueCookie(payload: Payload, secret: string) {
   const value = buildCookieValue(payload, secret);
+  let host: string | undefined;
+  try {
+    host = getRequestHost();
+  } catch {
+    host = undefined;
+  }
+  const domain = cookieDomainForHost(host);
+  console.log(`[access] issuing cookie host=${host ?? "<unknown>"} domain=${domain ?? "<host-only>"}`);
   setCookie(COOKIE_NAME, value, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
     path: "/",
     maxAge: COOKIE_MAX_AGE,
+    ...(domain ? { domain } : {}),
   });
 }
 
