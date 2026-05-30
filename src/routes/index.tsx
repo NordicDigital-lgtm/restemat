@@ -108,7 +108,7 @@ function Index() {
     return () => clearTimeout(t);
   }, [mounted]);
 
-  const limitReached = LIMIT_DISABLED ? false : !isDev && !isPro() && usage >= DAILY_LIMIT;
+  const limitReached = LIMIT_DISABLED ? false : !isDev && !isPro && usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[]; constraint?: string }>({
     mutationFn: ({ ingredients, regenerate, excludeTitles, constraint }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles, constraint } }),
@@ -142,7 +142,7 @@ function Index() {
         // ignore
       }
     }
-    if (!LIMIT_DISABLED && !isDev && !isPro() && readUsage() >= DAILY_LIMIT) {
+    if (!LIMIT_DISABLED && !isDev && !isPro && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
@@ -305,7 +305,7 @@ function Index() {
         </div>
       )}
 
-      {mounted && !isDev && !isPro() && !LIMIT_DISABLED && (
+      {mounted && !isDev && !isPro && !LIMIT_DISABLED && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
