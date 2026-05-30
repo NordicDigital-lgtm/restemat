@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { findRecipe, type RecipeResult, cleanString } from "@/lib/recipe.functions";
+import { getAccessStatus } from "@/lib/access.functions";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,10 +36,6 @@ function isDevMode(): boolean {
   return window.localStorage.getItem("devMode") === "1";
 }
 
-function isPro(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem("isPro") === "1";
-}
 
 function readUsage(): number {
   if (typeof window === "undefined") return 0;
@@ -71,8 +68,10 @@ function Index() {
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isDev, setIsDev] = useState(false);
+  const [isPro, setIsPro] = useState(false);
   const [examplesHidden, setExamplesHidden] = useState(false);
   const findRecipeFn = useServerFn(findRecipe);
+  const getAccessStatusFn = useServerFn(getAccessStatus);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -95,7 +94,10 @@ function Index() {
       // ignore
     }
     setMounted(true);
-  }, []);
+    getAccessStatusFn()
+      .then((res) => setIsPro(Boolean(res?.isPro)))
+      .catch(() => setIsPro(false));
+  }, [getAccessStatusFn]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -109,7 +111,7 @@ function Index() {
     return () => clearTimeout(t);
   }, [mounted]);
 
-  const limitReached = LIMIT_DISABLED ? false : !isDev && !isPro() && usage >= DAILY_LIMIT;
+  const limitReached = LIMIT_DISABLED ? false : !isDev && !isPro && usage >= DAILY_LIMIT;
 
   const mutation = useMutation<RecipeResult, Error, { ingredients: string; regenerate?: boolean; excludeTitles?: string[]; constraint?: string }>({
     mutationFn: ({ ingredients, regenerate, excludeTitles, constraint }) => findRecipeFn({ data: { ingredients, regenerate, excludeTitles, constraint } }),
@@ -143,7 +145,7 @@ function Index() {
         // ignore
       }
     }
-    if (!LIMIT_DISABLED && !isDev && !isPro() && readUsage() >= DAILY_LIMIT) {
+    if (!LIMIT_DISABLED && !isDev && !isPro && readUsage() >= DAILY_LIMIT) {
       setUsage(DAILY_LIMIT);
       return;
     }
@@ -306,7 +308,7 @@ function Index() {
         </div>
       )}
 
-      {mounted && !isDev && !isPro() && !LIMIT_DISABLED && (
+      {mounted && !isDev && !isPro && !LIMIT_DISABLED && (
         <p className="text-center text-xs text-muted-foreground">
           {Math.min(usage, DAILY_LIMIT)} av {DAILY_LIMIT} søk brukt i dag.
         </p>
