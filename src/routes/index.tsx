@@ -94,7 +94,10 @@ function Index() {
       // ignore
     }
     setMounted(true);
-  }, []);
+    getAccessStatusFn()
+      .then((res) => setIsPro(Boolean(res?.isPro)))
+      .catch(() => setIsPro(false));
+  }, [getAccessStatusFn]);
 
   useEffect(() => {
     if (!mounted) return;
