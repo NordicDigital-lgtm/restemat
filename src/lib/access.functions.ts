@@ -151,24 +151,24 @@ export const activateProAccess = createServerFn({ method: "POST" })
       `checkout/sessions/${encodeURIComponent(data.sessionId)}?expand[]=subscription`,
     );
     if ("error" in sessionResult) {
-      return { ok: false as const, debugError: sessionResult.error };
+      return { ok: false as const };
     }
     const session = sessionResult.data;
 
     const sub = session.subscription;
     if (!sub || typeof sub === "string") {
       console.error("[access] Session has no expanded subscription");
-      return { ok: false as const, debugError: "Session has no expanded subscription" };
+      return { ok: false as const };
     }
     if (!isActiveStatus(sub.status)) {
       console.error(`[access] Subscription status not active: ${sub.status}`);
-      return { ok: false as const, debugError: `Subscription status not active: ${sub.status}` };
+      return { ok: false as const };
     }
 
     const periodEnd = readPeriodEnd(sub);
     if (periodEnd === null) {
       console.error("[access] Could not determine current_period_end");
-      return { ok: false as const, debugError: "Could not determine current_period_end" };
+      return { ok: false as const };
     }
 
     issueCookie({ subId: sub.id, periodEnd }, secret);
