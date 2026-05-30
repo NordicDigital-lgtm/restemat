@@ -51,7 +51,7 @@ function Oppgrader() {
         </ul>
       </div>
 
-      <a href="https://buy.stripe.com/5kQ4gA8xx0UP6Ax5AS2Ry01?success_url=https%3A%2F%2Frestemat.com%2Fbetalt" target="_blank" rel="noopener noreferrer">
+      <a href="https://buy.stripe.com/3cIdRa155eLF8IF4wO2Ry02?success_url=https%3A%2F%2Frestemat.com%2Fbetalt" target="_blank" rel="noopener noreferrer">
         <Button size="lg" className="inline-flex h-12 w-full items-center justify-center rounded-xl text-base font-semibold">
           Start abonnement
         </Button>
