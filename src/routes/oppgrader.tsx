@@ -27,7 +27,7 @@ function Oppgrader() {
 
       <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-sm sm:p-7">
         <div className="mb-5 flex items-baseline justify-center gap-2 border-b border-border/60 pb-5">
-          <span className="text-5xl font-bold text-foreground">49 kr</span>
+          <span className="font-bold text-foreground text-4xl">29 kr</span>
           <span className="text-muted-foreground">/mnd</span>
         </div>
 
