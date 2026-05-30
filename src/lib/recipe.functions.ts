@@ -321,6 +321,8 @@ function stripEmoji(value: string): string {
 export function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   return stripEmoji(value)
+    .replace(/<\/?[a-zA-Z][^>]*>/g, " ")
+    .replace(/<[^>]*$/g, " ")
     .replace(/\s*[(\[{][^)\]}]*[)\]}]\s*/g, " ")
     .replace(/[()[\]{}]/g, " ")
     .replace(/\s+/g, " ")
