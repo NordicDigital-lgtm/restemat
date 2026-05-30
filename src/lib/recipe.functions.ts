@@ -156,14 +156,12 @@ Sett carb_suggestion, protein_suggestion og sauce_suggestion bare når de tilfø
         has_ingredients: {
           type: "array",
           items: { type: "string" },
-          description:
-            "Ingredienser brukeren har som brukes i retten (kun rene navn)",
+          description: "Ingredienser brukeren har som brukes i retten",
         },
         missing_ingredients: {
           type: "array",
           items: { type: "string" },
-          description:
-            "Ingredienser brukeren mangler (maks 3). Kun rene navn.",
+          description: "Ingredienser brukeren mangler (maks 3)",
         },
         full_ingredients: {
           type: "array",
@@ -181,81 +179,58 @@ Sett carb_suggestion, protein_suggestion og sauce_suggestion bare når de tilfø
         steps: {
           type: "array",
           items: { type: "string" },
-          description:
-            "Fremgangsmåte som fullstendige instruksjoner. Hvert steg starter med imperativverb og nevner ingrediens + handling + resultat. Alle ingredienser fra has_ingredients MÅ nevnes i minst ett steg.",
+          description: "Fremgangsmåte som fullstendige instruksjoner",
         },
         low_ingredient_note: {
           type: "string",
-          description:
-            'Hvis brukeren har svært få ingredienser (1–2), inkluder en kort melding som "Du har lite å jobbe med — her er noe enkelt du kan lage med bare et par ekstra ting." Ellers null.',
+          description: "Kort melding hvis brukeren har svært få ingredienser (1–2). Ellers null.",
         },
         unused_ingredients: {
           type: "array",
           items: { type: "string" },
-          description:
-            "Ingredienser brukeren har som ikke passer til denne retten. VIKTIG: Returner KUN det rene ingrediensnavnet - aldri legg til suffikser, identifiers eller tilleggstekst. Eksempler på RIKTIG format: 'soyasaus', 'ingefær', 'kanel', 'rosenkål'. ALDRI: 'soyasausHeader', 'ingefærHeader', 'kanelHeader', 'soyasaus (ikke brukt)', 'ingefær-unused'.",
+          description: "Ingredienser brukeren har som ikke passer til denne retten",
         },
         unused_reason: {
           type: "string",
-          description:
-            "Én kort, vennlig norsk setning som forklarer hvorfor unused_ingredients ikke brukes. Utelat hvis ingen unused_ingredients.",
+          description: "Én kort, vennlig norsk setning som forklarer hvorfor unused_ingredients ikke brukes",
         },
         unsafe_ingredients: {
           type: "array",
           items: { type: "string" },
-          description:
-            "Ingredienser som er giftige/helsefarlige eller krever spesialistkunnskap",
+          description: "Ingredienser som er giftige/helsefarlige eller krever spesialistkunnskap",
         },
         unsafe_reason: {
           type: "string",
-          description:
-            "Kort forklaring på hvorfor unsafe_ingredients ikke brukes. Utelat hvis ingen unsafe_ingredients.",
+          description: "Kort forklaring på hvorfor unsafe_ingredients ikke brukes",
         },
         filtered_out: {
           type: "array",
           items: { type: "string" },
-          description:
-            "Ikke-matvarer som ble filtrert bort (rengjøring, hygieneartikler, nonsens). Bruk brukerens egen skrivemåte.",
+          description: "Ikke-matvarer som ble filtrert bort. Bruk brukerens egen skrivemåte.",
         },
         error: {
           type: "string",
-          description:
-            'Feilkode hvis brukerens input er ugyldig. Eneste tillatte verdi er "not_food".',
+          description: 'Feilkode hvis brukerens input er ugyldig. Eneste tillatte verdi er "not_food".',
         },
         message: {
           type: "string",
-          description:
-            'Kun brukt ved error="not_food". Gi en vennlig melding som "Dette ser ikke ut som matvarer. Skriv inn det du faktisk har i kjøleskapet eller skapet."',
+          description: 'Kun brukt ved error="not_food". Vennlig melding til brukeren.',
         },
         protein_suggestion: {
           type: "string",
-          description:
-            "Ett kort forslag til protein (f.eks. 'Kyllingfilet eller laks') bare hvis retten mangler protein og brukeren ikke allerede har protein. Ellers null.",
+          description: "Ett kort forslag til protein. Ellers null.",
         },
         carb_suggestion: {
           type: "string",
-          description:
-            "Ett kort forslag til karbohydrat (f.eks. 'Kokt ris eller ovnsbakte poteter') bare hvis retten mangler karbohydrat. Ellers null.",
+          description: "Ett kort forslag til karbohydrat. Ellers null.",
         },
         sauce_suggestion: {
           type: "string",
-          description:
-            "Ett kort forslag til saus (f.eks. 'En enkel pannesaus laget av stekesjyen') bare hvis retten mangler saus. Ellers null.",
+          description: "Ett kort forslag til saus. Ellers null.",
         },
         time_estimate_min: {
           type: "number",
-          description:
-            "Estimert total tilberedningstid i minutter (kun et heltall, f.eks. 25). Ta med både forberedelse og koking.",
-        },
-        worst_fitting_have: {
-          type: "string",
-          description:
-            "Navnet på den ENE ingrediensen fra has_ingredients som passer dårligst med resten av retten — den som lettest kunne vært utelatt. Returner kun det rene ingrediensnavnet. Hvis alt passer perfekt, returner tom streng.",
-        },
-        best_fitting_unused: {
-          type: "string",
-          description:
-            "Navnet på den ENE ingrediensen fra unused_ingredients som har høyest sannsynlighet for å passe inn i en variant av retten. Returner kun det rene ingrediensnavnet. Hvis unused_ingredients er tom, returner tom streng.",
+          description: "Estimert total tilberedningstid i minutter (heltall)",
         },
       },
       required: [
