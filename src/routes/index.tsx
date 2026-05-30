@@ -120,7 +120,7 @@ function Index() {
   const sanitizeIngredients = (raw: string): string => {
     return raw
       .split(/[,\n;]+/)
-      .map((t) => cleanIngredientName(stripWrappingBrackets(t.trim())))
+      .map((t) => cleanString(t))
       .filter((t) => t.length >= 3 && /^[a-zA-ZæøåÆØÅ0-9\s.\-'/&]+$/.test(t))
       .join(", ");
   };
