@@ -95,7 +95,7 @@ function Index() {
     }
     setMounted(true);
     getAccessStatusFn()
-      .then((res) => setIsPro(Boolean(res?.isPro)))
+      .then((res) => setIsPro(res?.isPro === true))
       .catch(() => setIsPro(false));
   }, [getAccessStatusFn]);
 
