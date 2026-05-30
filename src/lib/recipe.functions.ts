@@ -49,8 +49,6 @@ export const findRecipe = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<RecipeResult> => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    console.log("ANTHROPIC_API_KEY exists:", !!apiKey);
-    console.log("Using model:", ANTHROPIC_MODEL);
     if (!apiKey) throw new Error("ANTHROPIC_API_KEY mangler.");
 
 
