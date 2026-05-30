@@ -316,20 +316,11 @@ function stripEmoji(value: string): string {
     .replace(/\p{Extended_Pictographic}/gu, "");
 }
 
-function cleanString(value: unknown): string {
+// Single normalizer: trim, collapse whitespace, strip emoji, and remove any
+// wrapping parentheses/brackets (e.g. "salt (havsalt)" -> "salt").
+export function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
-  // Strip characters outside Latin scripts (e.g. CJK leakage from the model).
-  // Keep Basic Latin, Latin-1 Supplement, Latin Extended-A/B, general punctuation, currency.
   return stripEmoji(value)
-    .replace(/[^\u0000-\u024F\u2000-\u206F\u20A0-\u20CF]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-export function stripWrappingBrackets(value: string): string {
-  // Remove parenthetical/bracketed content entirely (e.g. "salt (havsalt)" -> "salt"),
-  // then strip any remaining stray brackets and trim leading/trailing punctuation.
-  return value
     .replace(/\s*[(\[{][^)\]}]*[)\]}]\s*/g, " ")
     .replace(/[()[\]{}]/g, " ")
     .replace(/\s+/g, " ")
@@ -337,59 +328,16 @@ export function stripWrappingBrackets(value: string): string {
     .trim();
 }
 
-// Words that sometimes leak in from category labels, metadata, or model artifacts.
-// Stripped whenever they appear as trailing/leading tokens on an ingredient name.
-const NON_INGREDIENT_TOKENS = new Set([
-  "stories", "story", "garden", "village", "villages", "category", "categories",
-  "tag", "tags", "label", "labels", "ingredient", "ingredients",
-  "metadata", "meta", "info", "note", "notes", "type", "types",
-  "group", "groups", "section", "sections", "item", "items",
-  "list", "lists", "recipe", "recipes", "food", "foods",
-  "collection", "collections", "page", "pages",
-]);
-
-export function cleanIngredientName(value: string): string {
-  if (!value) return "";
-  // Cut off anything after a separator (comma, semicolon, colon, slash, pipe,
-  // or a dash surrounded by spaces) — explanations / category labels follow these.
-  let s = value.split(/\s*[,;:/|]\s*|\s+[-–—]\s+/)[0] ?? value;
-  s = s.replace(/\s+/g, " ").trim();
-  // Aggressive suffix sweep: strip known metadata words (run repeatedly to
-  // catch chained suffixes like "blåbær village stories").
-  const SUFFIX_RE = /\s+(village|villages|stories|story|category|categories|ingredient|ingredients|items|item|products|product|recipes|recipe|tags|tag|labels|label|collection|collections|pages|page|foods|food)$/i;
-  while (SUFFIX_RE.test(s)) {
-    s = s.replace(SUFFIX_RE, "").trim();
-  }
-  // Strip leading/trailing non-ingredient tokens repeatedly.
-  let changed = true;
-  while (changed) {
-    changed = false;
-    const tokens = s.split(/\s+/).filter(Boolean);
-    if (tokens.length > 1 && NON_INGREDIENT_TOKENS.has(tokens[tokens.length - 1].toLowerCase())) {
-      tokens.pop();
-      s = tokens.join(" ");
-      changed = true;
-      continue;
-    }
-    if (tokens.length > 1 && NON_INGREDIENT_TOKENS.has(tokens[0].toLowerCase())) {
-      tokens.shift();
-      s = tokens.join(" ");
-      changed = true;
-    }
-  }
-  return s.replace(/^[\s,;.:!?\-–—]+|[\s,;.:!?\-–—]+$/g, "").trim();
-}
-
 function toStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   const out: string[] = [];
   for (const item of value) {
     if (typeof item === "string") {
-      const s = cleanIngredientName(stripWrappingBrackets(cleanString(item)));
+      const s = cleanString(item);
       if (s) out.push(s);
     } else if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
-      const s = cleanIngredientName(stripWrappingBrackets(cleanString(o.name ?? o.ingredient ?? o.item ?? o.value)));
+      const s = cleanString(o.name ?? o.ingredient ?? o.item ?? o.value);
       if (s) out.push(s);
     }
   }
@@ -402,7 +350,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
   for (const item of value) {
     if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
-      const name = cleanIngredientName(stripWrappingBrackets(cleanString(o.name)));
+      const name = cleanString(o.name);
       if (!name) continue;
       out.push({
         amount: cleanString(o.amount),
@@ -410,7 +358,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
         name,
       });
     } else if (typeof item === "string") {
-      const s = cleanIngredientName(stripWrappingBrackets(cleanString(item)));
+      const s = cleanString(item);
       if (s) out.push({ amount: "", unit: "", name: s });
     }
   }
@@ -418,9 +366,7 @@ function toFullIngredients(value: unknown): FullIngredient[] {
 }
 
 function getRecipeGenerationErrorMessage(error: unknown): string {
-  const providerError = error as { status?: number; message?: string };
   const status = extractProviderStatus(error);
-  const message = (providerError?.message ?? "").toLowerCase();
 
   if (status === 404) {
     return "AI-modellen er midlertidig utilgjengelig. Prøv igjen om litt.";
@@ -432,15 +378,6 @@ function getRecipeGenerationErrorMessage(error: unknown): string {
 
   if (status === 401 || status === 403) {
     return "AI-tjenesten er ikke riktig konfigurert akkurat nå.";
-  }
-
-  if (
-    message.includes("quota") ||
-    message.includes("high demand") ||
-    message.includes("service unavailable") ||
-    message.includes("try again later")
-  ) {
-    return "Tjenesten er midlertidig opptatt akkurat nå. Prøv igjen om litt.";
   }
 
   return "Kunne ikke lage oppskrift akkurat nå. Prøv igjen.";
@@ -459,15 +396,7 @@ function extractProviderStatus(error: unknown): number | null {
 
 function isRetryableGenerationError(error: unknown): boolean {
   const status = extractProviderStatus(error);
-  const message = ((error as { message?: string } | null)?.message ?? "").toLowerCase();
-
-  return (
-    (status !== null && RETRYABLE_STATUS_CODES.has(status)) ||
-    message.includes("high demand") ||
-    message.includes("service unavailable") ||
-    message.includes("try again later") ||
-    message.includes("retry")
-  );
+  return status !== null && RETRYABLE_STATUS_CODES.has(status);
 }
 
 async function generateContentWithRetry<T>(
@@ -486,7 +415,7 @@ async function generateContentWithRetry<T>(
       }
 
       const delayMs = 700 * 2 ** (attempt - 1);
-      console.warn(`Gemini retry ${attempt}/${maxAttempts} after ${delayMs}ms`);
+      console.warn(`Anthropic retry ${attempt}/${maxAttempts} after ${delayMs}ms`);
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
@@ -494,7 +423,7 @@ async function generateContentWithRetry<T>(
   throw lastError;
 }
 
-async function callLovableGateway(
+async function callAnthropic(
   apiKey: string,
   systemPrompt: string,
   userPrompt: string,
@@ -569,8 +498,6 @@ function createEmptyRecipeResult(
     carbSuggestion: null,
     sauceSuggestion: null,
     timeEstimateMin: null,
-    worstFittingHave: null,
-    bestFittingUnused: null,
     ...overrides,
   };
 }
