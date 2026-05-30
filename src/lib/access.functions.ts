@@ -169,6 +169,10 @@ export const getAccessStatus = createServerFn({ method: "GET" }).handler(async (
   if (!sub || !isActiveStatus(sub.status)) {
     return { isPro: false as const };
   }
-  issueCookie({ subId: sub.id, periodEnd: sub.current_period_end }, secret);
+  const periodEnd = readPeriodEnd(sub);
+  if (periodEnd === null) {
+    return { isPro: false as const };
+  }
+  issueCookie({ subId: sub.id, periodEnd }, secret);
   return { isPro: true as const };
 });
