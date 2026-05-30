@@ -439,7 +439,13 @@ async function callAnthropic(
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
       max_tokens: 2000,
-      system: systemPrompt,
+      system: [
+        {
+          type: "text",
+          text: systemPrompt,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
       messages: [
         { role: "user", content: userPrompt },
       ],
@@ -448,6 +454,7 @@ async function callAnthropic(
           name: "foresla_middag",
           description: "Returner ett middagsforslag med full oppskrift",
           input_schema: toolParameters,
+          cache_control: { type: "ephemeral" },
         },
       ],
       tool_choice: { type: "tool", name: "foresla_middag" },
