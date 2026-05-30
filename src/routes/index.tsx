@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { findRecipe, type RecipeResult, cleanIngredientName, stripWrappingBrackets } from "@/lib/recipe.functions";
+import { findRecipe, type RecipeResult, cleanString } from "@/lib/recipe.functions";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -120,7 +120,7 @@ function Index() {
   const sanitizeIngredients = (raw: string): string => {
     return raw
       .split(/[,\n;]+/)
-      .map((t) => cleanIngredientName(stripWrappingBrackets(t.trim())))
+      .map((t) => cleanString(t))
       .filter((t) => t.length >= 3 && /^[a-zA-ZæøåÆØÅ0-9\s.\-'/&]+$/.test(t))
       .join(", ");
   };
@@ -424,9 +424,7 @@ function RecipeCard({
 }) {
   const showMakeSomethingElse = recipe.steps.length > 0;
   const [refineMode, setRefineMode] = useState<"none" | "med" | "uten">("none");
-  const worstHave = recipe.worstFittingHave;
-  const bestUnused = recipe.bestFittingUnused;
-  const showRefine = showMakeSomethingElse && (worstHave || bestUnused || true);
+  const showRefine = showMakeSomethingElse;
   return (
     <article className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-md">
       <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-transparent p-6 sm:p-7">
