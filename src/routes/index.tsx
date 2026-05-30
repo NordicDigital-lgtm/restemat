@@ -36,10 +36,6 @@ function isDevMode(): boolean {
   return window.localStorage.getItem("devMode") === "1";
 }
 
-function isPro(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem("isPro") === "1";
-}
 
 function readUsage(): number {
   if (typeof window === "undefined") return 0;
