@@ -73,7 +73,10 @@ function issueCookie(payload: Payload, secret: string) {
 type StripeSubscription = {
   id: string;
   status: string;
-  current_period_end: number;
+  current_period_end?: number;
+  items?: {
+    data?: Array<{ current_period_end?: number }>;
+  };
 };
 
 type StripeCheckoutSession = {
@@ -83,11 +86,19 @@ type StripeCheckoutSession = {
 
 async function stripeGet<T>(path: string): Promise<T | null> {
   const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) return null;
+  if (!key) {
+    console.error("[access] STRIPE_SECRET_KEY missing");
+    return null;
+  }
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     headers: { Authorization: `Bearer ${key}` },
   });
-  if (!res.ok) return null;
+  console.log(`[access] Stripe GET ${path} -> ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "<unreadable>");
+    console.error(`[access] Stripe error body: ${body}`);
+    return null;
+  }
   return (await res.json()) as T;
 }
 
@@ -95,11 +106,22 @@ function isActiveStatus(status: string | undefined): boolean {
   return status === "active" || status === "trialing";
 }
 
+function readPeriodEnd(sub: StripeSubscription): number | null {
+  if (typeof sub.current_period_end === "number") return sub.current_period_end;
+  const fromItems = sub.items?.data?.[0]?.current_period_end;
+  if (typeof fromItems === "number") return fromItems;
+  return null;
+}
+
 export const activateProAccess = createServerFn({ method: "POST" })
   .inputValidator(z.object({ sessionId: z.string().min(1).max(255) }))
   .handler(async ({ data }) => {
+    console.log(`[access] activateProAccess sessionId=${data.sessionId}`);
     const secret = process.env.COOKIE_SIGNING_SECRET;
-    if (!secret) return { ok: false as const };
+    if (!secret) {
+      console.error("[access] COOKIE_SIGNING_SECRET missing");
+      return { ok: false as const };
+    }
 
     const session = await stripeGet<StripeCheckoutSession>(
       `checkout/sessions/${encodeURIComponent(data.sessionId)}?expand[]=subscription`,
@@ -107,10 +129,22 @@ export const activateProAccess = createServerFn({ method: "POST" })
     if (!session) return { ok: false as const };
 
     const sub = session.subscription;
-    if (!sub || typeof sub === "string") return { ok: false as const };
-    if (!isActiveStatus(sub.status)) return { ok: false as const };
+    if (!sub || typeof sub === "string") {
+      console.error("[access] Session has no expanded subscription");
+      return { ok: false as const };
+    }
+    if (!isActiveStatus(sub.status)) {
+      console.error(`[access] Subscription status not active: ${sub.status}`);
+      return { ok: false as const };
+    }
 
-    issueCookie({ subId: sub.id, periodEnd: sub.current_period_end }, secret);
+    const periodEnd = readPeriodEnd(sub);
+    if (periodEnd === null) {
+      console.error("[access] Could not determine current_period_end");
+      return { ok: false as const };
+    }
+
+    issueCookie({ subId: sub.id, periodEnd }, secret);
     return { ok: true as const };
   });
 
@@ -135,6 +169,10 @@ export const getAccessStatus = createServerFn({ method: "GET" }).handler(async (
   if (!sub || !isActiveStatus(sub.status)) {
     return { isPro: false as const };
   }
-  issueCookie({ subId: sub.id, periodEnd: sub.current_period_end }, secret);
+  const periodEnd = readPeriodEnd(sub);
+  if (periodEnd === null) {
+    return { isPro: false as const };
+  }
+  issueCookie({ subId: sub.id, periodEnd }, secret);
   return { isPro: true as const };
 });
