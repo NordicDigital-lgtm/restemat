@@ -20,6 +20,7 @@ type Status = "loading" | "success" | "error";
 
 function Betalt() {
   const [status, setStatus] = useState<Status>("loading");
+  const [debugError, setDebugError] = useState<string | null>(null);
   const activate = useServerFn(activateProAccess);
 
   useEffect(() => {
@@ -33,7 +34,12 @@ function Betalt() {
     activate({ data: { sessionId } })
       .then((res) => {
         if (cancelled) return;
-        setStatus(res?.ok ? "success" : "error");
+        if (res?.ok) {
+          setStatus("success");
+        } else {
+          setStatus("error");
+          setDebugError(res?.debugError ?? null);
+        }
       })
       .catch(() => {
         if (!cancelled) setStatus("error");
@@ -59,6 +65,11 @@ function Betalt() {
         <p className="max-w-sm text-balance text-muted-foreground">
           Vi fikk ikke bekreftet betalingen. Prøv igjen, eller kontakt support.
         </p>
+        {debugError && (
+          <pre className="max-w-sm w-full whitespace-pre-wrap rounded-lg bg-muted p-3 text-left text-xs text-muted-foreground">
+            {debugError}
+          </pre>
+        )}
         <Link to="/oppgrader" className="w-full max-w-xs">
           <Button size="lg" className="h-12 w-full rounded-xl text-base font-semibold">
             Tilbake til oppgradering

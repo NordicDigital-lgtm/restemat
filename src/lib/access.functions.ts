@@ -103,22 +103,27 @@ type StripeCheckoutSession = {
   subscription: StripeSubscription | string | null;
 };
 
-async function stripeGet<T>(path: string): Promise<T | null> {
+async function stripeGet<T>(path: string): Promise<{ data: T } | { error: string }> {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
     console.error("[access] STRIPE_SECRET_KEY missing");
-    return null;
+    return { error: "STRIPE_SECRET_KEY missing" };
   }
-  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
-    headers: { Authorization: `Bearer ${key}` },
-  });
-  console.log(`[access] Stripe GET ${path} -> ${res.status}`);
-  if (!res.ok) {
-    const body = await res.text().catch(() => "<unreadable>");
-    console.error(`[access] Stripe error body: ${body}`);
-    return null;
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+    console.log(`[access] Stripe GET ${path} -> ${res.status}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => "<unreadable>");
+      console.error(`[access] Stripe error body: ${body}`);
+      return { error: `Stripe ${res.status}: ${body}` };
+    }
+    return { data: await res.json() as T };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { error: `Exception: ${msg}` };
   }
-  return (await res.json()) as T;
 }
 
 function isActiveStatus(status: string | undefined): boolean {
@@ -142,25 +147,28 @@ export const activateProAccess = createServerFn({ method: "POST" })
       return { ok: false as const };
     }
 
-    const session = await stripeGet<StripeCheckoutSession>(
+    const sessionResult = await stripeGet<StripeCheckoutSession>(
       `checkout/sessions/${encodeURIComponent(data.sessionId)}?expand[]=subscription`,
     );
-    if (!session) return { ok: false as const };
+    if ("error" in sessionResult) {
+      return { ok: false as const, debugError: sessionResult.error };
+    }
+    const session = sessionResult.data;
 
     const sub = session.subscription;
     if (!sub || typeof sub === "string") {
       console.error("[access] Session has no expanded subscription");
-      return { ok: false as const };
+      return { ok: false as const, debugError: "Session has no expanded subscription" };
     }
     if (!isActiveStatus(sub.status)) {
       console.error(`[access] Subscription status not active: ${sub.status}`);
-      return { ok: false as const };
+      return { ok: false as const, debugError: `Subscription status not active: ${sub.status}` };
     }
 
     const periodEnd = readPeriodEnd(sub);
     if (periodEnd === null) {
       console.error("[access] Could not determine current_period_end");
-      return { ok: false as const };
+      return { ok: false as const, debugError: "Could not determine current_period_end" };
     }
 
     issueCookie({ subId: sub.id, periodEnd }, secret);
@@ -182,10 +190,14 @@ export const getAccessStatus = createServerFn({ method: "GET" }).handler(async (
     return { isPro: true as const };
   }
 
-  const sub = await stripeGet<StripeSubscription>(
+  const subResult = await stripeGet<StripeSubscription>(
     `subscriptions/${encodeURIComponent(payload.subId)}`,
   );
-  if (!sub || !isActiveStatus(sub.status)) {
+  if ("error" in subResult || !subResult.data) {
+    return { isPro: false as const };
+  }
+  const sub = subResult.data;
+  if (!isActiveStatus(sub.status)) {
     return { isPro: false as const };
   }
   const periodEnd = readPeriodEnd(sub);
