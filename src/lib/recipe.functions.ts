@@ -39,8 +39,6 @@ export type RecipeResult = {
   carbSuggestion: string | null;
   sauceSuggestion: string | null;
   timeEstimateMin: number | null;
-  worstFittingHave: string | null;
-  bestFittingUnused: string | null;
 };
 
 const MAX_GENERATION_ATTEMPTS = 3;
