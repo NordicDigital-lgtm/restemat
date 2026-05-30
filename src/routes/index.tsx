@@ -68,8 +68,10 @@ function Index() {
   const [usage, setUsage] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isDev, setIsDev] = useState(false);
+  const [isPro, setIsPro] = useState(false);
   const [examplesHidden, setExamplesHidden] = useState(false);
   const findRecipeFn = useServerFn(findRecipe);
+  const getAccessStatusFn = useServerFn(getAccessStatus);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
