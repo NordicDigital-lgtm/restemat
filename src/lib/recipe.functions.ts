@@ -246,13 +246,13 @@ Sett carb_suggestion, protein_suggestion og sauce_suggestion bare når de tilfø
     let rawArgs: Record<string, unknown> | null = null;
     try {
       rawArgs = await generateContentWithRetry(
-        () => callLovableGateway(apiKey, systemPrompt, userPrompt, toolParameters),
+        () => callAnthropic(apiKey, systemPrompt, userPrompt, toolParameters),
         MAX_GENERATION_ATTEMPTS,
       );
-    } catch (gatewayError) {
-      console.error("Lovable AI gateway failed", gatewayError);
+    } catch (anthropicError) {
+      console.error("Anthropic API failed", anthropicError);
       return createEmptyRecipeResult({
-        serviceMessage: getRecipeGenerationErrorMessage(gatewayError),
+        serviceMessage: getRecipeGenerationErrorMessage(anthropicError),
         fallback: true,
       });
     }
@@ -276,77 +276,33 @@ Sett carb_suggestion, protein_suggestion og sauce_suggestion bare når de tilfø
     }
 
     // Parse successful recipe response
-    const title = cleanString(raw.title);
-    const description = cleanString(raw.description);
-    const stripSuffix = (str: string) =>
-      str
-        .replace(/(Header|neighborhood)\s*(g|ts|stk|dl|ss|fedd|potte)?$/i, "")
-        .replace(/(luxury|health|village|organic|fresh|premium|Cerferf)$/i, "")
-        .trim();
-    const haveIngredients = toStringArray(raw.has_ingredients).map(stripSuffix);
-    const missingIngredients = toStringArray(raw.missing_ingredients).map(stripSuffix);
-    const fullIngredients = toFullIngredients(raw.full_ingredients).map((fi) => ({
-      amount: fi.amount.replace(/Header.*$/i, "").trim(),
-      unit: fi.unit.replace(/Header.*$/i, "").trim(),
-      name: stripSuffix(fi.name),
-    }));
-    const steps = toStringArray(raw.steps);
-    const lowIngredientNote = raw.low_ingredient_note
-      ? cleanString(raw.low_ingredient_note)
-      : null;
-    const unusedIngredients = toStringArray(raw.unused_ingredients).map(stripSuffix);
-    const unusedReason = raw.unused_reason
-      ? cleanString(raw.unused_reason)
-      : null;
-    const unsafeIngredients = toStringArray(raw.unsafe_ingredients);
-    const unsafeReason = raw.unsafe_reason
-      ? cleanString(raw.unsafe_reason)
-      : null;
-    const filteredOut = toStringArray(raw.filtered_out);
-    const proteinSuggestion = raw.protein_suggestion
-      ? cleanString(raw.protein_suggestion)
-      : null;
-    const carbSuggestion = raw.carb_suggestion
-      ? cleanString(raw.carb_suggestion)
-      : null;
-    const sauceSuggestion = raw.sauce_suggestion
-      ? cleanString(raw.sauce_suggestion)
-      : null;
     const timeEstimateMin =
       typeof raw.time_estimate_min === "number"
         ? Math.round(raw.time_estimate_min)
         : typeof raw.time_estimate_min === "string" && /^\d+$/.test(raw.time_estimate_min.trim())
           ? Number(raw.time_estimate_min.trim())
           : null;
-    const worstFittingHave = raw.worst_fitting_have
-      ? stripSuffix(cleanIngredientName(stripWrappingBrackets(cleanString(raw.worst_fitting_have))))
-      : null;
-    const bestFittingUnused = raw.best_fitting_unused
-      ? stripSuffix(cleanIngredientName(stripWrappingBrackets(cleanString(raw.best_fitting_unused))))
-      : null;
 
     return {
-      name: title,
-      description,
-      haveIngredients,
-      missingIngredients,
-      fullIngredients,
-      steps,
-      lowIngredientNote,
-      unusedIngredients,
-      unusedReason,
-      unsafeIngredients,
-      unsafeReason,
-      filteredOut,
+      name: cleanString(raw.title),
+      description: cleanString(raw.description),
+      haveIngredients: toStringArray(raw.has_ingredients),
+      missingIngredients: toStringArray(raw.missing_ingredients),
+      fullIngredients: toFullIngredients(raw.full_ingredients),
+      steps: toStringArray(raw.steps),
+      lowIngredientNote: raw.low_ingredient_note ? cleanString(raw.low_ingredient_note) : null,
+      unusedIngredients: toStringArray(raw.unused_ingredients),
+      unusedReason: raw.unused_reason ? cleanString(raw.unused_reason) : null,
+      unsafeIngredients: toStringArray(raw.unsafe_ingredients),
+      unsafeReason: raw.unsafe_reason ? cleanString(raw.unsafe_reason) : null,
+      filteredOut: toStringArray(raw.filtered_out),
       notFoodMessage: null,
       serviceMessage: null,
       fallback: false,
-      proteinSuggestion,
-      carbSuggestion,
-      sauceSuggestion,
+      proteinSuggestion: raw.protein_suggestion ? cleanString(raw.protein_suggestion) : null,
+      carbSuggestion: raw.carb_suggestion ? cleanString(raw.carb_suggestion) : null,
+      sauceSuggestion: raw.sauce_suggestion ? cleanString(raw.sauce_suggestion) : null,
       timeEstimateMin,
-      worstFittingHave: worstFittingHave || null,
-      bestFittingUnused: bestFittingUnused || null,
     };
   });
 
