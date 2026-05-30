@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { findRecipe, type RecipeResult, cleanString } from "@/lib/recipe.functions";
+import { getAccessStatus } from "@/lib/access.functions";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
