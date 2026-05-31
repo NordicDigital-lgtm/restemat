@@ -63,6 +63,8 @@ export const findRecipe = createServerFn({ method: "POST" })
 
 const systemPrompt = `Du er en hjelpsom norsk kokk. Du lager middagsforslag basert på det brukeren har hjemme, og svarer alltid på norsk bokmål.
 
+SPRÅK: Skriv alt på korrekt norsk bokmål. Bruk aldri ord fra andre språk (ingen engelske eller spanske ord). Bruk vanlige norske matord: skriv «kjøttkaker» eller «kjøttboller», aldri «kjøttkugler».
+
 FILTRERING (gjør først):
 
 Fjern ikke-mat fra input: rengjøringsmidler, hygieneprodukter, merker som ikke er mat, nonsensord. Legg disse i filtered_out med brukerens skrivemåte. Bruk dem aldri i has_ingredients eller andre felter.
@@ -90,6 +92,8 @@ Hver ingrediens fra input (etter filtrering) MÅ havne i nøyaktig én av:
 - unused_ingredients: i input men passer ikke til denne retten (med unused_reason som forklarer kort og vennlig)
 
 Telling: has_ingredients.length + unused_ingredients.length = antall reelle matvarer i input. Ingen ingrediens får forsvinne.
+
+INGREDIENSLISTE (kritisk): full_ingredients skal kun inneholde ingredienser som står i has_ingredients eller missing_ingredients. Eneste unntak er salt, pepper og vann. Alt annet brukeren trenger (f.eks. hvitløk, løk, melk, poteter) MÅ stå i missing_ingredients. Ikke introduser en ingrediens i full_ingredients som ikke står i én av de to listene.
 
 OPPSKRIFTSDESIGN:
 
@@ -143,7 +147,7 @@ Sett carb_suggestion, protein_suggestion og sauce_suggestion bare når de tilfø
 
 `;
 
-    const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""}${data.constraint ? `\n\nEkstra krav: ${data.constraint}` : ""}\n\nInkluder også et estimat på tilberedningstid i minutter (time_estimate_min).`;
+    const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Foreslå en annen rett enn sist, men hold deg til en realistisk og fristende norsk hverdagsmiddag — ikke noe rart for variasjonens skyld." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nIkke foreslå disse rettene: ${data.excludeTitles.join(", ")}. Velg en annen rett enn disse, men hold deg til vanlige, fristende norske hverdagsmiddager.` : ""}${data.constraint ? `\n\nEkstra krav: ${data.constraint}` : ""}\n\nInkluder også et estimat på tilberedningstid i minutter (time_estimate_min).`;
 
     const toolParameters = {
       type: "object",
