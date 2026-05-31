@@ -441,6 +441,7 @@ async function callAnthropic(
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
       max_tokens: 2000,
+      temperature: 0.6,
       system: [
         {
           type: "text",
