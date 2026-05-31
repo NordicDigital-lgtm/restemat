@@ -143,7 +143,7 @@ Sett carb_suggestion, protein_suggestion og sauce_suggestion bare når de tilfø
 
 `;
 
-    const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Gi en helt annen rett enn forrige gang." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nDo not suggest any of these dishes: ${data.excludeTitles.join(", ")}. Velg en helt annen rett som ikke er en variasjon av disse.` : ""}${data.constraint ? `\n\nEkstra krav: ${data.constraint}` : ""}\n\nInkluder også et estimat på tilberedningstid i minutter (time_estimate_min).`;
+    const userPrompt = `Jeg har dette hjemme: ${sanitizedIngredients}${isSingleWord ? "\n\n(Dette er ett enkelt ord — bruk regel 8: avvis med not_food hvis det ikke utvilsomt er en norsk matingrediens.)" : ""}\n\nForeslå én middag jeg kan lage i kveld.${data.regenerate ? " Foreslå en annen rett enn sist, men hold deg til en realistisk og fristende norsk hverdagsmiddag — ikke noe rart for variasjonens skyld." : ""}${data.excludeTitles && data.excludeTitles.length > 0 ? `\n\nIkke foreslå disse rettene: ${data.excludeTitles.join(", ")}. Velg en annen rett enn disse, men hold deg til vanlige, fristende norske hverdagsmiddager.` : ""}${data.constraint ? `\n\nEkstra krav: ${data.constraint}` : ""}\n\nInkluder også et estimat på tilberedningstid i minutter (time_estimate_min).`;
 
     const toolParameters = {
       type: "object",
